@@ -6,7 +6,7 @@ function App() {
   function checkHealth() {
     fetch("https://api.workoutmadeeasy.com/health")
       .then((response) => response.json())
-      .then((data) => setHealth(data));
+      .then((data) => setHealth(data.data));
   }
   useEffect(() => {
     checkHealth();
