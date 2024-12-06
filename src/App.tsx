@@ -1,7 +1,17 @@
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  return <></>;
+  const [health, setHealth] = useState<string>("its dead ...");
+  function checkHealth() {
+    fetch("api.workoutmadeeasy.com/health")
+      .then((response) => response.json())
+      .then((data) => setHealth(data));
+  }
+  useEffect(() => {
+    checkHealth();
+  }, []);
+  return <>{health}</>;
 }
 
 export default App;
