@@ -4,7 +4,7 @@ import "./App.css";
 function App() {
   const [health, setHealth] = useState<string>("its dead ...");
   function checkHealth() {
-    fetch("api.workoutmadeeasy.com/health")
+    fetch("https://api.workoutmadeeasy.com/health")
       .then((response) => response.json())
       .then((data) => setHealth(data));
   }
