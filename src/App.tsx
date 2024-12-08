@@ -1,17 +1,13 @@
-import { useEffect, useState } from "react";
 import "./App.css";
+import { Button } from "./components/ui/button";
+import AuthPage from "./pages/AuthPage";
 
 function App() {
-  const [health, setHealth] = useState<string>("its dead ...");
-  function checkHealth() {
-    fetch("https://api.workoutmadeeasy.com/health")
-      .then((response) => response.json())
-      .then((data) => setHealth(data.data));
-  }
-  useEffect(() => {
-    checkHealth();
-  }, []);
-  return <>{health}</>;
+  return (
+    <div>
+      <AuthPage />
+    </div>
+  );
 }
 
 export default App;
