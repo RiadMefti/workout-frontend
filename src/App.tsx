@@ -1,12 +1,15 @@
+import { BrowserRouter, Route, Routes } from "react-router";
 import "./App.css";
-import { Button } from "./components/ui/button";
 import AuthPage from "./pages/AuthPage";
 
 function App() {
   return (
-    <div>
-      <AuthPage />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth/:mode" element={<AuthPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
