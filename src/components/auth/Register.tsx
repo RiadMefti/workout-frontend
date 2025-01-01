@@ -1,10 +1,10 @@
-// src/components/auth/Register.tsx
 import { Label } from "@radix-ui/react-label";
 import { User, Mail, Lock } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useNavigate } from "react-router-dom";
+import { apiClient } from "../../api/client";
 import { useAuth } from "./AuthContext";
 
 const Register = () => {
@@ -13,7 +13,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const { setToken } = useAuth();
   const navigate = useNavigate();
 
@@ -23,27 +23,14 @@ const Register = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
-      });
+      const response = await apiClient.register({ name, email, password });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error);
+      if (!response.success) {
+        throw new Error(response.error);
       }
 
-      // Save token and redirect
-      localStorage.setItem("token", data.data.token);
-      setToken(data.data.token);
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -59,7 +46,7 @@ const Register = () => {
           {error}
         </div>
       )}
-
+      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <div className="relative flex align-middle">

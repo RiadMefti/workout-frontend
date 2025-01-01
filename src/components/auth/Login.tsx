@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useNavigate } from "react-router-dom";
+import { apiClient } from "../../api/client";
 import { useAuth } from "./AuthContext";
 
 const Login = () => {
@@ -21,26 +22,14 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const response = await apiClient.login({ email, password });
 
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error);
+      if (!response.success) {
+        throw new Error(response.error);
       }
 
-      // Save token and redirect
-      localStorage.setItem('token', data.data.token);
-      setToken(data.data.token);
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
