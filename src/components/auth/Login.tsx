@@ -3,18 +3,60 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  const { setToken } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add the login logic here: appel api pour login
-    console.log("Login:", { email, password });
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+
+      // Save token and redirect
+      localStorage.setItem('token', data.data.token);
+      setToken(data.data.token);
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleLogin} className="space-y-4">
+      {error && (
+        <div className="p-3 text-sm bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <div className="relative">
@@ -27,9 +69,11 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
       </div>
+
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <div className="relative">
@@ -42,13 +86,16 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
       </div>
-      <Button type="submit" className="w-full">
-        Login
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Logging in..." : "Login"}
       </Button>
     </form>
   );
 };
+
 export default Login;
