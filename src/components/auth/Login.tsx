@@ -4,8 +4,8 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "../../api/client";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../hooks/auth/AuthContext";
+import { authClient } from "@/api/AuthApi";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -22,13 +22,13 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await apiClient.login({ email, password });
+      const response = await authClient.login({ email, password });
 
       if (!response.success) {
         throw new Error(response.error);
       }
 
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem("token", response.data.token);
       setToken(response.data.token);
       navigate("/");
     } catch (err) {

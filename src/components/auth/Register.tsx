@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "../../api/client";
-import { useAuth } from "./AuthContext";
+import { authClient } from "../../api/AuthApi";
+import { useAuth } from "../../hooks/auth/AuthContext";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -13,7 +13,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { setToken } = useAuth();
   const navigate = useNavigate();
 
@@ -23,13 +23,13 @@ const Register = () => {
     setError("");
 
     try {
-      const response = await apiClient.register({ name, email, password });
+      const response = await authClient.register({ name, email, password });
 
       if (!response.success) {
         throw new Error(response.error);
       }
 
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem("token", response.data.token);
       setToken(response.data.token);
       navigate("/");
     } catch (err) {
@@ -46,7 +46,7 @@ const Register = () => {
           {error}
         </div>
       )}
-      
+
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <div className="relative flex align-middle">

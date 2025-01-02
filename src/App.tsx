@@ -4,19 +4,22 @@ import "./App.css";
 import AuthPage from "./pages/AuthPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Button } from "./components/ui/button";
-import { AuthProvider, useAuth } from "./components/auth/AuthContext";
 import { useEffect, useState } from "react";
-import { apiClient } from "./api/client";
+import { useAuth } from "./hooks/auth/AuthContext";
+import { AuthProvider } from "./hooks/auth/AuthProvider";
+import { profileClient } from "./api/ProfileApi";
+import { useUser } from "./hooks/user/UserContext";
 
 const Home = () => {
   const { logout } = useAuth();
+  const { user } = useUser();
   const [profile, setProfile] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await apiClient.getProfile();
+        const response = await profileClient.getProfile();
         if (response.success) {
           setProfile(response.data);
         } else {
@@ -44,7 +47,9 @@ const Home = () => {
         {profile && (
           <div className="p-4 bg-white shadow rounded">
             <h2 className="text-lg font-semibold mb-2">Profile Data:</h2>
-            <p>{profile}</p>
+            <p>
+              {profile} - {user?.name} - {user?.email}
+            </p>
           </div>
         )}
 
