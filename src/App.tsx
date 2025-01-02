@@ -6,9 +6,9 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Button } from "./components/ui/button";
 import { useEffect, useState } from "react";
 import { useAuth } from "./hooks/auth/AuthContext";
-import { AuthProvider } from "./hooks/auth/AuthProvider";
 import { profileClient } from "./api/ProfileApi";
 import { useUser } from "./hooks/user/UserContext";
+import { Providers } from "./hooks/Provider";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -63,7 +63,7 @@ const Home = () => {
 
 function App() {
   return (
-    <AuthProvider>
+    <Providers>
       <BrowserRouter>
         <Routes>
           <Route path="/auth/:mode" element={<AuthPage />} />
@@ -78,7 +78,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+    </Providers>
   );
 }
 
