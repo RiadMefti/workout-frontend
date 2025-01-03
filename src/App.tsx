@@ -12,6 +12,7 @@ import { Providers } from "./hooks/Provider";
 import WorkoutCreationPage from "./pages/WorkoutCreationPage";
 import WorkoutListPage from "./pages/WorkoutListPage";
 import NextWorkoutPage from "./pages/RecordWorkoutPage";
+import DashboardPage from "./pages/DashboardPage";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -62,6 +63,10 @@ const Home = () => {
             <Button className="mt-4 w-full">
               <Link to="/next-workout">Next Workout</Link>
             </Button>
+
+            <Button className="mt-4 w-full">
+              <Link to="/dashboard">Dashboard</Link>
+            </Button>
           </div>
         )}
 
@@ -110,6 +115,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <NextWorkoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
               </ProtectedRoute>
             }
           />
