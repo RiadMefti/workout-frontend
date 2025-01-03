@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import "./App.css";
 import AuthPage from "./pages/AuthPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -9,6 +9,7 @@ import { useAuth } from "./hooks/auth/AuthContext";
 import { profileClient } from "./api/ProfileApi";
 import { useUser } from "./hooks/user/UserContext";
 import { Providers } from "./hooks/Provider";
+import WorkoutCreationPage from "./pages/WorkoutCreationPage";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -50,6 +51,9 @@ const Home = () => {
             <p>
               {profile} - {user?.name} - {user?.email}
             </p>
+            <Button className="mt-4 w-full">
+              <Link to="/create-workout">Create Workout</Link>
+            </Button>
           </div>
         )}
 
@@ -73,6 +77,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Home />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/create-workout"
+            element={
+              <ProtectedRoute>
+                <WorkoutCreationPage />
               </ProtectedRoute>
             }
           />
