@@ -24,39 +24,39 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { WorkoutDTO } from "@/type";
-import { ArrowRight, ChevronRight, Dumbbell, Timer } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronRight,
+  Dumbbell,
+  Pencil,
+  Plus,
+  Timer,
+  Trash,
+  X,
+} from "lucide-react";
 
+// Mock data
 const MOCK_WORKOUTS: WorkoutDTO[] = [
   {
     id: "1",
     name: "Full Body Strength",
     description: "Complete full body workout focusing on major muscle groups",
     exercises: [
-      {
-        name: "Bench Press",
-        type: "strength",
-        sets: 3,
-        reps: 10,
-      },
-      {
-        name: "Squats",
-        type: "strength",
-        sets: 4,
-        reps: 8,
-      },
-      {
-        name: "Deadlifts",
-        type: "strength",
-        sets: 3,
-        reps: 8,
-      },
-      {
-        name: "Pull-ups",
-        type: "strength",
-        sets: 3,
-        reps: 10,
-      },
+      { name: "Bench Press", type: "strength", sets: 3, reps: 10 },
+      { name: "Squats", type: "strength", sets: 4, reps: 8 },
+      { name: "Deadlifts", type: "strength", sets: 3, reps: 8 },
+      { name: "Pull-ups", type: "strength", sets: 3, reps: 10 },
     ],
   },
   {
@@ -64,24 +64,9 @@ const MOCK_WORKOUTS: WorkoutDTO[] = [
     name: "HIIT Cardio",
     description: "High-intensity interval training for maximum calorie burn",
     exercises: [
-      {
-        name: "Sprint Intervals",
-        type: "cardio",
-        duration: 20,
-        distance: 5,
-      },
-      {
-        name: "Jump Rope",
-        type: "cardio",
-        duration: 10,
-        distance: 0,
-      },
-      {
-        name: "Mountain Climbers",
-        type: "cardio",
-        duration: 5,
-        distance: 0,
-      },
+      { name: "Sprint Intervals", type: "cardio", duration: 20, distance: 5 },
+      { name: "Jump Rope", type: "cardio", duration: 10, distance: 0 },
+      { name: "Mountain Climbers", type: "cardio", duration: 5, distance: 0 },
     ],
   },
   {
@@ -89,38 +74,84 @@ const MOCK_WORKOUTS: WorkoutDTO[] = [
     name: "Upper Body Power",
     description: "Focus on upper body strength and muscle building",
     exercises: [
-      {
-        name: "Shoulder Press",
-        type: "strength",
-        sets: 4,
-        reps: 8,
-      },
-      {
-        name: "Bicep Curls",
-        type: "strength",
-        sets: 3,
-        reps: 12,
-      },
-      {
-        name: "Tricep Extensions",
-        type: "strength",
-        sets: 3,
-        reps: 12,
-      },
+      { name: "Shoulder Press", type: "strength", sets: 4, reps: 8 },
+      { name: "Bicep Curls", type: "strength", sets: 3, reps: 12 },
+      { name: "Tricep Extensions", type: "strength", sets: 3, reps: 12 },
     ],
   },
 ];
+
+type ExerciseUpdateField = {
+  name: string;
+  type: "strength" | "cardio";
+  sets: number;
+  reps: number;
+  duration: number;
+  distance: number;
+};
 
 const WorkoutsListPage: FC = () => {
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutDTO | null>(
     null
   );
+  const [editingWorkout, setEditingWorkout] = useState<WorkoutDTO | null>(null);
   const [activeWorkoutId, setActiveWorkoutId] = useState<string>("1");
+  const [workouts, setWorkouts] = useState<WorkoutDTO[]>(MOCK_WORKOUTS);
 
-  const workouts = MOCK_WORKOUTS;
   const activeWorkout = workouts.find((w) => w.id === activeWorkoutId);
 
-  // Mobile-friendly workout list item
+  const handleEditWorkout = (workout: WorkoutDTO) => {
+    setEditingWorkout({ ...workout, exercises: [...workout.exercises] });
+    setSelectedWorkout(null);
+  };
+
+  const handleUpdateWorkout = () => {
+    if (!editingWorkout) return;
+    setWorkouts(
+      workouts.map((w) => (w.id === editingWorkout.id ? editingWorkout : w))
+    );
+    if (editingWorkout.id === activeWorkoutId) {
+      setActiveWorkoutId(editingWorkout.id);
+    }
+    setEditingWorkout(null);
+  };
+
+  const updateExercise = (
+    index: number,
+    field: keyof ExerciseUpdateField,
+    value: ExerciseUpdateField[keyof ExerciseUpdateField]
+  ) => {
+    if (!editingWorkout) return;
+    const updatedExercises = [...editingWorkout.exercises];
+    updatedExercises[index] = {
+      ...updatedExercises[index],
+      [field]: value,
+    };
+    setEditingWorkout({
+      ...editingWorkout,
+      exercises: updatedExercises,
+    });
+  };
+
+  const addExercise = () => {
+    if (!editingWorkout) return;
+    setEditingWorkout({
+      ...editingWorkout,
+      exercises: [
+        ...editingWorkout.exercises,
+        { name: "", type: "strength", sets: 3, reps: 10 },
+      ],
+    });
+  };
+
+  const removeExercise = (index: number) => {
+    if (!editingWorkout) return;
+    setEditingWorkout({
+      ...editingWorkout,
+      exercises: editingWorkout.exercises.filter((_, i) => i !== index),
+    });
+  };
+
   const WorkoutListItem = ({ workout }: { workout: WorkoutDTO }) => (
     <div className="block sm:hidden">
       <Card className="mb-4" onClick={() => setSelectedWorkout(workout)}>
@@ -248,58 +279,64 @@ const WorkoutsListPage: FC = () => {
 
           {/* Desktop View */}
           <div className="hidden sm:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Exercises</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {workouts.map((workout) => (
-                  <TableRow key={workout.id}>
-                    <TableCell className="font-medium">
-                      {workout.name}
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <span className="line-clamp-1">
-                        {workout.description || "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell>{workout.exercises.length}</TableCell>
-                    <TableCell>
-                      {workout.id === activeWorkoutId ? (
-                        <Badge>Active</Badge>
-                      ) : (
-                        <Badge variant="outline">Inactive</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedWorkout(workout)}
-                        >
-                          Details
-                        </Button>
-                        {workout.id !== activeWorkoutId && (
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Exercises</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {workouts.map((workout) => (
+                    <TableRow key={workout.id}>
+                      <TableCell className="font-medium">
+                        {workout.name}
+                      </TableCell>
+                      <TableCell>
+                        <span className="line-clamp-1">
+                          {workout.description || "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell>{workout.exercises.length}</TableCell>
+                      <TableCell>
+                        {workout.id === activeWorkoutId ? (
+                          <Badge
+                            variant="default"
+                            className="bg-green-600 text-white"
+                          >
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">Inactive</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
                             onClick={() => setActiveWorkoutId(workout.id)}
+                            disabled={workout.id === activeWorkoutId}
                           >
                             Set Active
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedWorkout(workout)}
+                          >
+                            Details
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -309,15 +346,33 @@ const WorkoutsListPage: FC = () => {
         open={!!selectedWorkout}
         onOpenChange={(open) => !open && setSelectedWorkout(null)}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] sm:max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>{selectedWorkout?.name}</DialogTitle>
-            <DialogDescription>
-              {selectedWorkout?.description || "No description"}
-            </DialogDescription>
+        <DialogContent className="h-screen sm:h-auto max-w-full sm:max-w-2xl p-4 ">
+          <DialogHeader className="sm:p-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4  p-4 ">
+              <div>
+                <DialogTitle>{selectedWorkout?.name}</DialogTitle>
+                <DialogDescription>
+                  {selectedWorkout?.description || "No description"}
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    if (selectedWorkout) handleEditWorkout(selectedWorkout);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="destructive" size="icon" onClick={() => {}}>
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-3 p-1">
+          <ScrollArea className="h-[60vh] sm:h-[50vh]">
+            <div className="space-y-3 px-6 sm:px-0">
               {selectedWorkout?.exercises.map((exercise, index) => (
                 <Card key={`${exercise.name}-${index}`}>
                   <CardContent className="p-4">
@@ -349,9 +404,9 @@ const WorkoutsListPage: FC = () => {
             </div>
           </ScrollArea>
           {selectedWorkout?.id !== activeWorkoutId && (
-            <div className="mt-2">
+            <div className="flex justify-end border-t p-6 sm:p-0 sm:pt-4 mt-4">
               <Button
-                className="w-full"
+                className="w-full sm:w-auto"
                 onClick={() => {
                   setActiveWorkoutId(selectedWorkout?.id || "");
                   setSelectedWorkout(null);
@@ -362,6 +417,210 @@ const WorkoutsListPage: FC = () => {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Workout Dialog */}
+      <Dialog
+        open={!!editingWorkout}
+        onOpenChange={(open) => !open && setEditingWorkout(null)}
+      >
+        <DialogContent className="h-screen sm:h-auto max-w-full sm:max-w-2xl p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle>Edit Workout</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col h-[75vh]">
+            <ScrollArea className="flex-grow pr-4">
+              <div className="space-y-4 pb-2">
+                <div>
+                  <Label htmlFor="name">Workout Name</Label>
+                  <Input
+                    id="name"
+                    value={editingWorkout?.name || ""}
+                    onChange={(e) =>
+                      setEditingWorkout((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              name: e.target.value,
+                            }
+                          : null
+                      )
+                    }
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={editingWorkout?.description || ""}
+                    onChange={(e) =>
+                      setEditingWorkout((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              description: e.target.value,
+                            }
+                          : null
+                      )
+                    }
+                    className="mt-1.5"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Exercises</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addExercise}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Exercise
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {editingWorkout?.exercises.map((exercise, index) => (
+                      <Card key={index}>
+                        <CardContent className="pt-6 relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-4 top-4"
+                            onClick={() => removeExercise(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                          <div className="grid gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label>Exercise Name</Label>
+                                <Input
+                                  value={exercise.name}
+                                  onChange={(e) =>
+                                    updateExercise(
+                                      index,
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="mt-1.5"
+                                />
+                              </div>
+                              <div>
+                                <Label>Type</Label>
+                                <Select
+                                  value={exercise.type}
+                                  onValueChange={(
+                                    value: "strength" | "cardio"
+                                  ) => updateExercise(index, "type", value)}
+                                >
+                                  <SelectTrigger className="mt-1.5">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="strength">
+                                      Strength
+                                    </SelectItem>
+                                    <SelectItem value="cardio">
+                                      Cardio
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            {exercise.type === "strength" ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Sets</Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={exercise.sets || ""}
+                                    onChange={(e) =>
+                                      updateExercise(
+                                        index,
+                                        "sets",
+                                        parseInt(e.target.value) || 0
+                                      )
+                                    }
+                                    className="mt-1.5"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Reps</Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={exercise.reps || ""}
+                                    onChange={(e) =>
+                                      updateExercise(
+                                        index,
+                                        "reps",
+                                        parseInt(e.target.value) || 0
+                                      )
+                                    }
+                                    className="mt-1.5"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Duration (minutes)</Label>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    value={exercise.duration || ""}
+                                    onChange={(e) =>
+                                      updateExercise(
+                                        index,
+                                        "duration",
+                                        parseInt(e.target.value) || 0
+                                      )
+                                    }
+                                    className="mt-1.5"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Distance (km)</Label>
+                                  <Input
+                                    type="number"
+                                    min="0.1"
+                                    step="0.1"
+                                    value={exercise.distance || ""}
+                                    onChange={(e) =>
+                                      updateExercise(
+                                        index,
+                                        "distance",
+                                        parseFloat(e.target.value) || 0
+                                      )
+                                    }
+                                    className="mt-1.5"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+              <Button variant="outline" onClick={() => setEditingWorkout(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateWorkout}>Save Changes</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
