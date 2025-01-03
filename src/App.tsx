@@ -10,6 +10,7 @@ import { profileClient } from "./api/ProfileApi";
 import { useUser } from "./hooks/user/UserContext";
 import { Providers } from "./hooks/Provider";
 import WorkoutCreationPage from "./pages/WorkoutCreationPage";
+import WorkoutListPage from "./pages/WorkoutListPage";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -54,6 +55,9 @@ const Home = () => {
             <Button className="mt-4 w-full">
               <Link to="/create-workout">Create Workout</Link>
             </Button>
+            <Button className="mt-4 w-full">
+              <Link to="/workouts">View Workouts</Link>
+            </Button>
           </div>
         )}
 
@@ -86,6 +90,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WorkoutCreationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workouts"
+            element={
+              <ProtectedRoute>
+                <WorkoutListPage />
               </ProtectedRoute>
             }
           />
