@@ -11,6 +11,7 @@ import { useUser } from "./hooks/user/UserContext";
 import { Providers } from "./hooks/Provider";
 import WorkoutCreationPage from "./pages/WorkoutCreationPage";
 import WorkoutListPage from "./pages/WorkoutListPage";
+import NextWorkoutPage from "./pages/RecordWorkoutPage";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -58,6 +59,9 @@ const Home = () => {
             <Button className="mt-4 w-full">
               <Link to="/workouts">View Workouts</Link>
             </Button>
+            <Button className="mt-4 w-full">
+              <Link to="/next-workout">Next Workout</Link>
+            </Button>
           </div>
         )}
 
@@ -98,6 +102,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WorkoutListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/next-workout"
+            element={
+              <ProtectedRoute>
+                <NextWorkoutPage />
               </ProtectedRoute>
             }
           />
