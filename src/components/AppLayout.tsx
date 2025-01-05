@@ -8,6 +8,7 @@ import {
   Play,
   LogOut,
   Menu,
+  User,
 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,11 @@ interface AppLayoutProps {
 
 const navItems = [
   {
+    title: "Next Workout",
+    icon: <Play className="h-5 w-5" />,
+    href: "/next-workout",
+  },
+  {
     title: "Dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
     href: "/dashboard",
@@ -41,9 +47,9 @@ const navItems = [
     href: "/workouts",
   },
   {
-    title: "Next Workout",
-    icon: <Play className="h-5 w-5" />,
-    href: "/next-workout",
+    title: "Profile",
+    icon: <User className="h-5 w-5" />,
+    href: "/profile",
   },
 ];
 
