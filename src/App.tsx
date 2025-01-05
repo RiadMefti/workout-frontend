@@ -13,6 +13,7 @@ import WorkoutCreationPage from "./pages/WorkoutCreationPage";
 import WorkoutListPage from "./pages/WorkoutListPage";
 import NextWorkoutPage from "./pages/RecordWorkoutPage";
 import DashboardPage from "./pages/DashboardPage";
+import HomePage from "./pages/HomePage";
 
 const Home = () => {
   const { logout } = useAuth();
@@ -89,7 +90,7 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <Home />
+                <HomePage />
               </ProtectedRoute>
             }
           />
