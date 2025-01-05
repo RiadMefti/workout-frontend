@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -39,47 +39,15 @@ import {
   ArrowRight,
   ChevronRight,
   Dumbbell,
+  Loader2,
   Pencil,
   Plus,
   Timer,
   Trash,
   X,
 } from "lucide-react";
-
-// Mock data
-const MOCK_WORKOUTS: WorkoutDTO[] = [
-  {
-    id: "1",
-    name: "Full Body Strength",
-    description: "Complete full body workout focusing on major muscle groups",
-    exercises: [
-      { name: "Bench Press", type: "strength", sets: 3, reps: 10 },
-      { name: "Squats", type: "strength", sets: 4, reps: 8 },
-      { name: "Deadlifts", type: "strength", sets: 3, reps: 8 },
-      { name: "Pull-ups", type: "strength", sets: 3, reps: 10 },
-    ],
-  },
-  {
-    id: "2",
-    name: "HIIT Cardio",
-    description: "High-intensity interval training for maximum calorie burn",
-    exercises: [
-      { name: "Sprint Intervals", type: "cardio", duration: 20, distance: 5 },
-      { name: "Jump Rope", type: "cardio", duration: 10, distance: 0 },
-      { name: "Mountain Climbers", type: "cardio", duration: 5, distance: 0 },
-    ],
-  },
-  {
-    id: "3",
-    name: "Upper Body Power",
-    description: "Focus on upper body strength and muscle building",
-    exercises: [
-      { name: "Shoulder Press", type: "strength", sets: 4, reps: 8 },
-      { name: "Bicep Curls", type: "strength", sets: 3, reps: 12 },
-      { name: "Tricep Extensions", type: "strength", sets: 3, reps: 12 },
-    ],
-  },
-];
+import { workoutClient } from "@/api/WorkoutApi";
+import { useToast } from "@/hooks/use-toast";
 
 type ExerciseUpdateField = {
   name: string;
@@ -95,27 +63,124 @@ const WorkoutsListPage: FC = () => {
     null
   );
   const [editingWorkout, setEditingWorkout] = useState<WorkoutDTO | null>(null);
-  const [activeWorkoutId, setActiveWorkoutId] = useState<string>("1");
-  const [workouts, setWorkouts] = useState<WorkoutDTO[]>(MOCK_WORKOUTS);
-
+  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
+  const [workouts, setWorkouts] = useState<WorkoutDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   const activeWorkout = workouts.find((w) => w.id === activeWorkoutId);
 
+  // Fetch workouts
+  const fetchWorkouts = async () => {
+    try {
+      setLoading(true);
+      const response = await workoutClient.getWorkouts();
+      if (response.success) {
+        setWorkouts(response.data);
+        if (!activeWorkoutId && response.data.length > 0) {
+          setActiveWorkoutId(response.data[0].id);
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: response.error || "Failed to fetch workouts",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to fetch workouts",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  // Handle edit workout
   const handleEditWorkout = (workout: WorkoutDTO) => {
     setEditingWorkout({ ...workout, exercises: [...workout.exercises] });
     setSelectedWorkout(null);
   };
 
-  const handleUpdateWorkout = () => {
+  // Handle update workout
+  const handleUpdateWorkout = async () => {
     if (!editingWorkout) return;
-    setWorkouts(
-      workouts.map((w) => (w.id === editingWorkout.id ? editingWorkout : w))
-    );
-    if (editingWorkout.id === activeWorkoutId) {
-      setActiveWorkoutId(editingWorkout.id);
+
+    try {
+      const response = await workoutClient.editWorkout(
+        editingWorkout.id,
+        editingWorkout
+      );
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Workout updated successfully",
+        });
+        await fetchWorkouts();
+        setEditingWorkout(null);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: response.error || "Failed to update workout",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to update workout",
+      });
     }
-    setEditingWorkout(null);
   };
 
+  // Handle delete workout
+  const handleDeleteWorkout = async (id: string) => {
+    try {
+      const response = await workoutClient.deleteWorkout(id);
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Workout deleted successfully",
+        });
+        await fetchWorkouts();
+        setSelectedWorkout(null);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: response.error || "Failed to delete workout",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete workout",
+      });
+    }
+  };
+  const addExercise = () => {
+    if (!editingWorkout) return;
+    setEditingWorkout({
+      ...editingWorkout,
+      exercises: [
+        ...editingWorkout.exercises,
+        { name: "", type: "strength", sets: 3, reps: 10 },
+      ],
+    });
+  };
   const updateExercise = (
     index: number,
     field: keyof ExerciseUpdateField,
@@ -133,17 +198,6 @@ const WorkoutsListPage: FC = () => {
     });
   };
 
-  const addExercise = () => {
-    if (!editingWorkout) return;
-    setEditingWorkout({
-      ...editingWorkout,
-      exercises: [
-        ...editingWorkout.exercises,
-        { name: "", type: "strength", sets: 3, reps: 10 },
-      ],
-    });
-  };
-
   const removeExercise = (index: number) => {
     if (!editingWorkout) return;
     setEditingWorkout({
@@ -151,6 +205,18 @@ const WorkoutsListPage: FC = () => {
       exercises: editingWorkout.exercises.filter((_, i) => i !== index),
     });
   };
+
+  // Add loading state to UI
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading workouts...</p>
+        </div>
+      </div>
+    );
+  }
 
   const WorkoutListItem = ({ workout }: { workout: WorkoutDTO }) => (
     <div className="block sm:hidden">
@@ -365,7 +431,15 @@ const WorkoutsListPage: FC = () => {
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button variant="destructive" size="icon" onClick={() => {}}>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => {
+                    if (selectedWorkout) {
+                      handleDeleteWorkout(selectedWorkout.id);
+                    }
+                  }}
+                >
                   <Trash className="h-4 w-4" />
                 </Button>
               </div>
