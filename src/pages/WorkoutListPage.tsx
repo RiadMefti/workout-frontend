@@ -64,7 +64,10 @@ const WorkoutSplitPage: FC = () => {
     setActiveSplit(
       splits.find((s: WorkoutSplitDTO) => s.id === activeSplitId) || null
     );
-  }, [activeSplitId, splits]);
+    console.log(
+      splits.find((s: WorkoutSplitDTO) => s.id === activeSplitId) || null
+    );
+  }, [splits, activeSplitId]);
 
   // Fetch active split and splits
   const fetchData = async () => {
@@ -100,9 +103,6 @@ const WorkoutSplitPage: FC = () => {
       const response = await splitClient.getSplits();
       if (response.success) {
         setSplits(response.data);
-        if (!activeSplitId && response.data.length > 0) {
-          setActiveSplitId(response.data[0].id);
-        }
       } else {
         toast({
           variant: "destructive",
@@ -217,11 +217,11 @@ const WorkoutSplitPage: FC = () => {
     });
   };
   // Handle set active split
-  const handleSetActiveSplit = async (splitName: string) => {
+  const handleSetActiveSplit = async (splitId: string) => {
     try {
-      const response = await splitClient.setActiveSplit(splitName);
+      const response = await splitClient.setActiveSplit(splitId);
       if (response.success) {
-        setActiveSplitId(splitName);
+        setActiveSplitId(splitId);
         toast({
           title: "Success",
           description: "Active split updated successfully",
