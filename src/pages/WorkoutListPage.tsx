@@ -63,14 +63,11 @@ const WorkoutSplitPage: FC = () => {
     () => splits.find((s) => s.name === activeSplitId),
     [splits, activeSplitId]
   );
-  // At the top with other state
-  const [loadingActiveSplit, setLoadingActiveSplit] = useState(true);
 
   // Fetch active split and splits
   const fetchData = async () => {
     try {
       setLoading(true);
-      setLoadingActiveSplit(true);
 
       // Fetch active split ID first
       const activeResponse = await splitClient.getActiveSplit();
@@ -92,7 +89,6 @@ const WorkoutSplitPage: FC = () => {
       });
     } finally {
       setLoading(false);
-      setLoadingActiveSplit(false);
     }
   };
   // Fetch splits
@@ -628,7 +624,6 @@ const WorkoutSplitPage: FC = () => {
                     </Button>
                   </div>
 
-                  {/* Inside Edit Split Dialog, replace the current workout cards */}
                   <div className="space-y-4">
                     {editingSplit?.workouts.map((workout, workoutIndex) => (
                       <Card key={workoutIndex}>
