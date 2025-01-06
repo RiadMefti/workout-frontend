@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -27,6 +27,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Exercise, WorkoutSplitDTO } from "@/type";
+import {
+  ArrowRight,
+  ChevronRight,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash,
+  X,
+} from "lucide-react";
+import { splitClient } from "@/api/WorkoutApi";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -34,56 +46,70 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WorkoutDTO } from "@/type";
-import {
-  ArrowRight,
-  ChevronRight,
-  Dumbbell,
-  Loader2,
-  Pencil,
-  Plus,
-  Timer,
-  Trash,
-  X,
-} from "lucide-react";
-import { workoutClient } from "@/api/WorkoutApi";
-import { useToast } from "@/hooks/use-toast";
 
-type ExerciseUpdateField = {
-  name: string;
-  type: "strength" | "cardio";
-  sets: number;
-  reps: number;
-  duration: number;
-  distance: number;
-};
-
-const WorkoutsListPage: FC = () => {
-  const [selectedWorkout, setSelectedWorkout] = useState<WorkoutDTO | null>(
+const WorkoutSplitPage: FC = () => {
+  const [selectedSplit, setSelectedSplit] = useState<WorkoutSplitDTO | null>(
     null
   );
-  const [editingWorkout, setEditingWorkout] = useState<WorkoutDTO | null>(null);
-  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
-  const [workouts, setWorkouts] = useState<WorkoutDTO[]>([]);
+  const [editingSplit, setEditingSplit] = useState<WorkoutSplitDTO | null>(
+    null
+  );
+  const [activeSplitId, setActiveSplitId] = useState<string | null>(null);
+  const [splits, setSplits] = useState<WorkoutSplitDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const activeWorkout = workouts.find((w) => w.id === activeWorkoutId);
 
-  // Fetch workouts
-  const fetchWorkouts = async () => {
+  const activeSplit = useMemo(
+    () => splits.find((s) => s.name === activeSplitId),
+    [splits, activeSplitId]
+  );
+  // At the top with other state
+  const [loadingActiveSplit, setLoadingActiveSplit] = useState(true);
+
+  // Fetch active split and splits
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await workoutClient.getWorkouts();
+      setLoadingActiveSplit(true);
+
+      // Fetch active split ID first
+      const activeResponse = await splitClient.getActiveSplit();
+      if (activeResponse.success) {
+        setActiveSplitId(activeResponse.data);
+      }
+
+      // Then fetch all splits
+      const splitsResponse = await splitClient.getSplits();
+      if (splitsResponse.success) {
+        setSplits(splitsResponse.data);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to fetch data",
+      });
+    } finally {
+      setLoading(false);
+      setLoadingActiveSplit(false);
+    }
+  };
+  // Fetch splits
+  const fetchSplits = async () => {
+    try {
+      setLoading(true);
+      const response = await splitClient.getSplits();
       if (response.success) {
-        setWorkouts(response.data);
-        if (!activeWorkoutId && response.data.length > 0) {
-          setActiveWorkoutId(response.data[0].id);
+        setSplits(response.data);
+        if (!activeSplitId && response.data.length > 0) {
+          setActiveSplitId(response.data[0].id);
         }
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.error || "Failed to fetch workouts",
+          description: response.error || "Failed to fetch splits",
         });
       }
     } catch (error) {
@@ -91,7 +117,7 @@ const WorkoutsListPage: FC = () => {
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to fetch workouts",
+          error instanceof Error ? error.message : "Failed to fetch splits",
       });
     } finally {
       setLoading(false);
@@ -100,37 +126,35 @@ const WorkoutsListPage: FC = () => {
 
   // Initial fetch
   useEffect(() => {
-    fetchWorkouts();
-  }, []);
-
-  // Handle edit workout
-  const handleEditWorkout = (workout: WorkoutDTO) => {
-    setEditingWorkout({ ...workout, exercises: [...workout.exercises] });
-    setSelectedWorkout(null);
+    fetchSplits();
+    fetchData();
+  }, []); // Handle edit split
+  const handleEditSplit = (split: WorkoutSplitDTO) => {
+    setEditingSplit({ ...split, workouts: [...split.workouts] });
+    setSelectedSplit(null);
   };
 
-  // Handle update workout
-  const handleUpdateWorkout = async () => {
-    if (!editingWorkout) return;
+  // Handle update split
+  const handleUpdateSplit = async () => {
+    if (!editingSplit) return;
 
     try {
-      const response = await workoutClient.editWorkout(
-        editingWorkout.id,
-        editingWorkout
+      const response = await splitClient.editSplit(
+        editingSplit.id,
+        editingSplit
       );
-
       if (response.success) {
         toast({
           title: "Success",
-          description: "Workout updated successfully",
+          description: "Split updated successfully",
         });
-        await fetchWorkouts();
-        setEditingWorkout(null);
+        await fetchSplits();
+        setEditingSplit(null);
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.error || "Failed to update workout",
+          description: response.error || "Failed to update split",
         });
       }
     } catch (error) {
@@ -138,28 +162,77 @@ const WorkoutsListPage: FC = () => {
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to update workout",
+          error instanceof Error ? error.message : "Failed to update split",
       });
     }
   };
+  const addExercise = (workoutIndex: number) => {
+    if (!editingSplit) return;
+    const updatedWorkouts = [...editingSplit.workouts];
 
-  // Handle delete workout
-  const handleDeleteWorkout = async (id: string) => {
+    const workout = updatedWorkouts[workoutIndex];
+    workout.exercises = [
+      ...workout.exercises,
+      {
+        name: "",
+        type: "strength",
+      },
+    ];
+
+    setEditingSplit({
+      ...editingSplit,
+      workouts: updatedWorkouts,
+    });
+  };
+
+  const updateExercise = (
+    workoutIndex: number,
+    exerciseIndex: number,
+    field: keyof Exercise,
+    value: string | number | undefined
+  ) => {
+    if (!editingSplit) return;
+    const updatedWorkouts = [...editingSplit.workouts];
+    const workout = updatedWorkouts[workoutIndex];
+
+    workout.exercises[exerciseIndex] = {
+      ...workout.exercises[exerciseIndex],
+      [field]: value,
+    };
+
+    setEditingSplit({
+      ...editingSplit,
+      workouts: updatedWorkouts,
+    });
+  };
+
+  const removeExercise = (workoutIndex: number, exerciseIndex: number) => {
+    if (!editingSplit) return;
+    const updatedWorkouts = [...editingSplit.workouts];
+    const workout = updatedWorkouts[workoutIndex];
+
+    workout.exercises = workout.exercises.filter((_, i) => i !== exerciseIndex);
+
+    setEditingSplit({
+      ...editingSplit,
+      workouts: updatedWorkouts,
+    });
+  };
+  // Handle set active split
+  const handleSetActiveSplit = async (splitName: string) => {
     try {
-      const response = await workoutClient.deleteWorkout(id);
-
+      const response = await splitClient.setActiveSplit(splitName);
       if (response.success) {
+        setActiveSplitId(splitName);
         toast({
           title: "Success",
-          description: "Workout deleted successfully",
+          description: "Active split updated successfully",
         });
-        await fetchWorkouts();
-        setSelectedWorkout(null);
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.error || "Failed to delete workout",
+          description: response.error || "Failed to set active split",
         });
       }
     } catch (error) {
@@ -167,78 +240,90 @@ const WorkoutsListPage: FC = () => {
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to delete workout",
+          error instanceof Error ? error.message : "Failed to set active split",
       });
     }
   };
-  const addExercise = () => {
-    if (!editingWorkout) return;
-    setEditingWorkout({
-      ...editingWorkout,
-      exercises: [
-        ...editingWorkout.exercises,
-        { name: "", type: "strength", sets: 3, reps: 10 },
+
+  // Handle delete split
+  const handleDeleteSplit = async (id: string) => {
+    try {
+      const response = await splitClient.deleteSplit(id);
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Split deleted successfully",
+        });
+        await fetchSplits();
+        setSelectedSplit(null);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: response.error || "Failed to delete split",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete split",
+      });
+    }
+  };
+
+  // Workout management functions within split
+  const addWorkout = () => {
+    if (!editingSplit) return;
+    setEditingSplit({
+      ...editingSplit,
+      workouts: [
+        ...editingSplit.workouts,
+        { id: crypto.randomUUID(), name: "", exercises: [] },
       ],
     });
   };
-  const updateExercise = (
-    index: number,
-    field: keyof ExerciseUpdateField,
-    value: ExerciseUpdateField[keyof ExerciseUpdateField]
-  ) => {
-    if (!editingWorkout) return;
-    const updatedExercises = [...editingWorkout.exercises];
-    updatedExercises[index] = {
-      ...updatedExercises[index],
-      [field]: value,
+
+  const updateWorkout = (index: number, name: string) => {
+    if (!editingSplit) return;
+    const updatedWorkouts = [...editingSplit.workouts];
+    updatedWorkouts[index] = {
+      ...updatedWorkouts[index],
+      name,
     };
-    setEditingWorkout({
-      ...editingWorkout,
-      exercises: updatedExercises,
+    setEditingSplit({
+      ...editingSplit,
+      workouts: updatedWorkouts,
     });
   };
 
-  const removeExercise = (index: number) => {
-    if (!editingWorkout) return;
-    setEditingWorkout({
-      ...editingWorkout,
-      exercises: editingWorkout.exercises.filter((_, i) => i !== index),
+  const removeWorkout = (index: number) => {
+    if (!editingSplit) return;
+    setEditingSplit({
+      ...editingSplit,
+      workouts: editingSplit.workouts.filter((_, i) => i !== index),
     });
-  };
-
-  // Add loading state to UI
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading workouts...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const WorkoutListItem = ({ workout }: { workout: WorkoutDTO }) => (
+  }; // Mobile list item component
+  const SplitListItem = ({ split }: { split: WorkoutSplitDTO }) => (
     <div className="block sm:hidden">
-      <Card className="mb-4" onClick={() => setSelectedWorkout(workout)}>
+      <Card className="mb-4" onClick={() => setSelectedSplit(split)}>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h3 className="font-medium">{workout.name}</h3>
+              <h3 className="font-medium">{split.name}</h3>
               <p className="text-sm text-gray-500 line-clamp-1">
-                {workout.description}
+                {split.description}
               </p>
               <div className="flex items-center gap-2">
                 <Badge
-                  variant={
-                    workout.id === activeWorkoutId ? "default" : "outline"
-                  }
+                  variant={split.id === activeSplitId ? "default" : "outline"}
                   className="mt-1"
                 >
-                  {workout.id === activeWorkoutId ? "Active" : "Inactive"}
+                  {split.id === activeSplitId ? "Active" : "Inactive"}
                 </Badge>
                 <span className="text-sm text-gray-500">
-                  {workout.exercises.length} exercises
+                  {split.workouts.length} workouts
                 </span>
               </div>
             </div>
@@ -251,69 +336,67 @@ const WorkoutsListPage: FC = () => {
     </div>
   );
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading splits...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Main return
   return (
     <div className="container mx-auto px-4 py-6 max-w-5xl">
-      {/* Active Workout Section */}
+      {/* Active Split Section */}
       <Card className="mb-8">
         <CardHeader className="space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Active Workout</CardTitle>
+              <CardTitle>Active Split</CardTitle>
               <CardDescription>
-                Currently selected workout for tracking
+                Currently selected workout split
               </CardDescription>
             </div>
-            {activeWorkout && (
+            {activeSplit && (
               <Badge variant="secondary" className="hidden sm:inline-flex">
-                {activeWorkout.exercises.length} exercises
+                {activeSplit.workouts.length} workouts
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent>
-          {activeWorkout ? (
+          {activeSplit ? (
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <div>
-                  <h3 className="text-lg font-semibold">
-                    {activeWorkout.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold">{activeSplit.name}</h3>
                   <p className="text-sm text-gray-500">
-                    {activeWorkout.description || "No description"}
+                    {activeSplit.description || "No description"}
                   </p>
                 </div>
                 <Badge variant="secondary" className="w-fit sm:hidden">
-                  {activeWorkout.exercises.length} exercises
+                  {activeSplit.workouts.length} workouts
                 </Badge>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {activeWorkout.exercises.map((exercise) => (
+                {activeSplit.workouts.map((workout) => (
                   <Card
-                    key={exercise.name}
+                    key={workout.name + workout.exercises.length + workout.id}
                     className="hover:bg-accent/50 transition-colors"
                   >
                     <CardContent className="p-4">
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                          {exercise.type === "strength" ? (
-                            <Dumbbell className="h-4 w-4 shrink-0" />
-                          ) : (
-                            <Timer className="h-4 w-4 shrink-0" />
-                          )}
                           <span className="font-medium line-clamp-1">
-                            {exercise.name}
+                            {workout.name}
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">
-                          {exercise.type === "strength" ? (
-                            <span>
-                              {exercise.sets} sets × {exercise.reps} reps
-                            </span>
-                          ) : (
-                            <span>
-                              {exercise.duration}min • {exercise.distance}km
-                            </span>
-                          )}
+                          {workout.exercises.length} exercises
                         </div>
                       </div>
                     </CardContent>
@@ -323,24 +406,23 @@ const WorkoutsListPage: FC = () => {
             </div>
           ) : (
             <div className="text-center py-6 text-gray-500">
-              No active workout selected
+              No active split selected
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* All Workouts Section */}
+      {/* All Splits Section */}
       <Card>
         <CardHeader>
-          <CardTitle>All Workouts</CardTitle>
+          <CardTitle>All Splits</CardTitle>
           <CardDescription>
-            Select a workout to view details or set as active
+            Select a split to view details or set as active
           </CardDescription>
         </CardHeader>
         <CardContent>
           {/* Mobile View */}
-          {workouts.map((workout) => (
-            <WorkoutListItem key={workout.id} workout={workout} />
+          {splits.map((split) => (
+            <SplitListItem key={split.id} split={split} />
           ))}
 
           {/* Desktop View */}
@@ -349,27 +431,27 @@ const WorkoutsListPage: FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Exercises</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="w-[200px]">Name</TableHead>
+                    <TableHead className="w-[300px]">Description</TableHead>
+                    <TableHead className="w-[100px]">Workouts</TableHead>
+                    <TableHead className="w-[100px]">Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {workouts.map((workout) => (
-                    <TableRow key={workout.id}>
+                  {splits.map((split) => (
+                    <TableRow key={split.id}>
                       <TableCell className="font-medium">
-                        {workout.name}
+                        {split.name}
                       </TableCell>
                       <TableCell>
                         <span className="line-clamp-1">
-                          {workout.description || "—"}
+                          {split.description || "—"}
                         </span>
                       </TableCell>
-                      <TableCell>{workout.exercises.length}</TableCell>
+                      <TableCell>{split.workouts.length}</TableCell>
                       <TableCell>
-                        {workout.id === activeWorkoutId ? (
+                        {split.name === activeSplitId ? (
                           <Badge
                             variant="default"
                             className="bg-green-600 text-white"
@@ -384,15 +466,15 @@ const WorkoutsListPage: FC = () => {
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
-                            onClick={() => setActiveWorkoutId(workout.id)}
-                            disabled={workout.id === activeWorkoutId}
+                            onClick={() => handleSetActiveSplit(split.name)}
+                            disabled={split.name === activeSplitId}
                           >
                             Set Active
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedWorkout(workout)}
+                            onClick={() => setSelectedSplit(split)}
                           >
                             Details
                           </Button>
@@ -407,18 +489,18 @@ const WorkoutsListPage: FC = () => {
         </CardContent>
       </Card>
 
-      {/* Workout Details Dialog */}
+      {/* Split Details Dialog */}
       <Dialog
-        open={!!selectedWorkout}
-        onOpenChange={(open) => !open && setSelectedWorkout(null)}
+        open={!!selectedSplit}
+        onOpenChange={(open) => !open && setSelectedSplit(null)}
       >
-        <DialogContent className="h-screen sm:h-auto max-w-full sm:max-w-2xl p-4 ">
+        <DialogContent className="h-screen sm:h-auto max-w-full sm:max-w-2xl p-4">
           <DialogHeader className="sm:p-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4  p-4 ">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4">
               <div>
-                <DialogTitle>{selectedWorkout?.name}</DialogTitle>
+                <DialogTitle>{selectedSplit?.name}</DialogTitle>
                 <DialogDescription>
-                  {selectedWorkout?.description || "No description"}
+                  {selectedSplit?.description || "No description"}
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -426,7 +508,7 @@ const WorkoutsListPage: FC = () => {
                   variant="outline"
                   size="icon"
                   onClick={() => {
-                    if (selectedWorkout) handleEditWorkout(selectedWorkout);
+                    if (selectedSplit) handleEditSplit(selectedSplit);
                   }}
                 >
                   <Pencil className="h-4 w-4" />
@@ -435,8 +517,8 @@ const WorkoutsListPage: FC = () => {
                   variant="destructive"
                   size="icon"
                   onClick={() => {
-                    if (selectedWorkout) {
-                      handleDeleteWorkout(selectedWorkout.id);
+                    if (selectedSplit) {
+                      handleDeleteSplit(selectedSplit.id);
                     }
                   }}
                 >
@@ -447,72 +529,61 @@ const WorkoutsListPage: FC = () => {
           </DialogHeader>
           <ScrollArea className="h-[60vh] sm:h-[50vh]">
             <div className="space-y-3 px-6 sm:px-0">
-              {selectedWorkout?.exercises.map((exercise, index) => (
-                <Card key={`${exercise.name}-${index}`}>
+              {selectedSplit?.workouts.map((workout) => (
+                <Card key={workout.id}>
                   <CardContent className="p-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {exercise.type === "strength" ? (
-                            <Dumbbell className="h-4 w-4" />
-                          ) : (
-                            <Timer className="h-4 w-4" />
-                          )}
-                          <span className="font-medium">{exercise.name}</span>
+                          <span className="font-medium">{workout.name}</span>
                         </div>
-                        <Badge variant="secondary">{exercise.type}</Badge>
+                        <Badge variant="secondary">
+                          {workout.exercises.length} exercises
+                        </Badge>
                       </div>
-                      {exercise.type === "strength" ? (
-                        <div className="text-sm text-gray-500">
-                          {exercise.sets} sets × {exercise.reps} reps
-                        </div>
-                      ) : (
-                        <div className="text-sm text-gray-500">
-                          {exercise.duration} minutes • {exercise.distance} km
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </ScrollArea>
-          {selectedWorkout?.id !== activeWorkoutId && (
+          {selectedSplit?.id !== activeSplitId && (
             <div className="flex justify-end border-t p-6 sm:p-0 sm:pt-4 mt-4">
               <Button
                 className="w-full sm:w-auto"
                 onClick={() => {
-                  setActiveWorkoutId(selectedWorkout?.id || "");
-                  setSelectedWorkout(null);
+                  if (selectedSplit) {
+                    handleSetActiveSplit(selectedSplit.id);
+                    setSelectedSplit(null);
+                  }
                 }}
               >
-                Set as Active Workout
+                Set as Active Split
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Edit Workout Dialog */}
+      {/* Edit Split Dialog */}
       <Dialog
-        open={!!editingWorkout}
-        onOpenChange={(open) => !open && setEditingWorkout(null)}
+        open={!!editingSplit}
+        onOpenChange={(open) => !open && setEditingSplit(null)}
       >
         <DialogContent className="h-screen sm:h-auto max-w-full sm:max-w-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle>Edit Workout</DialogTitle>
+            <DialogTitle>Edit Split</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col h-[75vh]">
             <ScrollArea className="flex-grow pr-4">
               <div className="space-y-4 pb-2">
                 <div>
-                  <Label htmlFor="name">Workout Name</Label>
+                  <Label htmlFor="name">Split Name</Label>
                   <Input
                     id="name"
-                    value={editingWorkout?.name || ""}
+                    value={editingSplit?.name || ""}
                     onChange={(e) =>
-                      setEditingWorkout((prev) =>
+                      setEditingSplit((prev) =>
                         prev
                           ? {
                               ...prev,
@@ -528,9 +599,9 @@ const WorkoutsListPage: FC = () => {
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    value={editingWorkout?.description || ""}
+                    value={editingSplit?.description || ""}
                     onChange={(e) =>
-                      setEditingWorkout((prev) =>
+                      setEditingSplit((prev) =>
                         prev
                           ? {
                               ...prev,
@@ -545,141 +616,231 @@ const WorkoutsListPage: FC = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Exercises</Label>
+                    <Label>Workouts</Label>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={addExercise}
+                      onClick={addWorkout}
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Exercise
+                      Add Workout
                     </Button>
                   </div>
 
+                  {/* Inside Edit Split Dialog, replace the current workout cards */}
                   <div className="space-y-4">
-                    {editingWorkout?.exercises.map((exercise, index) => (
-                      <Card key={index}>
+                    {editingSplit?.workouts.map((workout, workoutIndex) => (
+                      <Card key={workoutIndex}>
                         <CardContent className="pt-6 relative">
                           <Button
                             variant="ghost"
                             size="icon"
                             className="absolute right-4 top-4"
-                            onClick={() => removeExercise(index)}
+                            onClick={() => removeWorkout(workoutIndex)}
                           >
                             <X className="h-4 w-4" />
                           </Button>
-                          <div className="grid gap-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <Label>Exercise Name</Label>
-                                <Input
-                                  value={exercise.name}
-                                  onChange={(e) =>
-                                    updateExercise(
-                                      index,
-                                      "name",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="mt-1.5"
-                                />
-                              </div>
-                              <div>
-                                <Label>Type</Label>
-                                <Select
-                                  value={exercise.type}
-                                  onValueChange={(
-                                    value: "strength" | "cardio"
-                                  ) => updateExercise(index, "type", value)}
-                                >
-                                  <SelectTrigger className="mt-1.5">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="strength">
-                                      Strength
-                                    </SelectItem>
-                                    <SelectItem value="cardio">
-                                      Cardio
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                          <div className="space-y-6">
+                            <div>
+                              <Label>Workout Name</Label>
+                              <Input
+                                value={workout.name}
+                                onChange={(e) =>
+                                  updateWorkout(workoutIndex, e.target.value)
+                                }
+                                className="mt-1.5"
+                              />
                             </div>
 
-                            {exercise.type === "strength" ? (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label>Sets</Label>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    value={exercise.sets || ""}
-                                    onChange={(e) =>
-                                      updateExercise(
-                                        index,
-                                        "sets",
-                                        parseInt(e.target.value) || 0
-                                      )
-                                    }
-                                    className="mt-1.5"
-                                  />
-                                </div>
-                                <div>
-                                  <Label>Reps</Label>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    value={exercise.reps || ""}
-                                    onChange={(e) =>
-                                      updateExercise(
-                                        index,
-                                        "reps",
-                                        parseInt(e.target.value) || 0
-                                      )
-                                    }
-                                    className="mt-1.5"
-                                  />
-                                </div>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <Label>Exercises</Label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => addExercise(workoutIndex)}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Exercise
+                                </Button>
                               </div>
-                            ) : (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                  <Label>Duration (minutes)</Label>
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    value={exercise.duration || ""}
-                                    onChange={(e) =>
-                                      updateExercise(
-                                        index,
-                                        "duration",
-                                        parseInt(e.target.value) || 0
-                                      )
-                                    }
-                                    className="mt-1.5"
-                                  />
-                                </div>
-                                <div>
-                                  <Label>Distance (km)</Label>
-                                  <Input
-                                    type="number"
-                                    min="0.1"
-                                    step="0.1"
-                                    value={exercise.distance || ""}
-                                    onChange={(e) =>
-                                      updateExercise(
-                                        index,
-                                        "distance",
-                                        parseFloat(e.target.value) || 0
-                                      )
-                                    }
-                                    className="mt-1.5"
-                                  />
-                                </div>
+
+                              <div className="space-y-4">
+                                {workout.exercises.map(
+                                  (exercise, exerciseIndex) => (
+                                    <Card
+                                      key={exerciseIndex}
+                                      className="border-dashed"
+                                    >
+                                      <CardContent className="pt-6 relative">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="absolute right-2 top-2"
+                                          onClick={() =>
+                                            removeExercise(
+                                              workoutIndex,
+                                              exerciseIndex
+                                            )
+                                          }
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                              <Label>Exercise Name</Label>
+                                              <Input
+                                                value={exercise.name}
+                                                onChange={(e) =>
+                                                  updateExercise(
+                                                    workoutIndex,
+                                                    exerciseIndex,
+                                                    "name",
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="mt-1.5"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label>Type</Label>
+                                              <Select
+                                                value={exercise.type}
+                                                onValueChange={(
+                                                  value: "strength" | "cardio"
+                                                ) =>
+                                                  updateExercise(
+                                                    workoutIndex,
+                                                    exerciseIndex,
+                                                    "type",
+                                                    value
+                                                  )
+                                                }
+                                              >
+                                                <SelectTrigger className="mt-1.5">
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="strength">
+                                                    Strength
+                                                  </SelectItem>
+                                                  <SelectItem value="cardio">
+                                                    Cardio
+                                                  </SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                          </div>
+
+                                          {exercise.type === "strength" ? (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                              <div>
+                                                <Label>Sets</Label>
+                                                <Input
+                                                  type="number"
+                                                  min="1"
+                                                  value={exercise.sets || ""}
+                                                  onChange={(e) =>
+                                                    updateExercise(
+                                                      workoutIndex,
+                                                      exerciseIndex,
+                                                      "sets",
+                                                      e.target.value === ""
+                                                        ? undefined
+                                                        : parseInt(
+                                                            e.target.value
+                                                          )
+                                                    )
+                                                  }
+                                                  className="mt-1.5"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label>Reps</Label>
+                                                <Input
+                                                  type="number"
+                                                  min="1"
+                                                  value={exercise.reps || ""}
+                                                  onChange={(e) =>
+                                                    updateExercise(
+                                                      workoutIndex,
+                                                      exerciseIndex,
+                                                      "reps",
+                                                      e.target.value === ""
+                                                        ? undefined
+                                                        : parseInt(
+                                                            e.target.value
+                                                          )
+                                                    )
+                                                  }
+                                                  className="mt-1.5"
+                                                />
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                              <div>
+                                                <Label>
+                                                  Duration (minutes)
+                                                </Label>
+                                                <Input
+                                                  type="number"
+                                                  min="1"
+                                                  value={
+                                                    exercise.duration || ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    updateExercise(
+                                                      workoutIndex,
+                                                      exerciseIndex,
+                                                      "duration",
+                                                      e.target.value === ""
+                                                        ? undefined
+                                                        : parseInt(
+                                                            e.target.value
+                                                          )
+                                                    )
+                                                  }
+                                                  className="mt-1.5"
+                                                />
+                                              </div>
+                                              <div>
+                                                <Label>Distance (km)</Label>
+                                                <Input
+                                                  type="number"
+                                                  min="0.1"
+                                                  step="0.1"
+                                                  value={
+                                                    exercise.distance || ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    updateExercise(
+                                                      workoutIndex,
+                                                      exerciseIndex,
+                                                      "distance",
+                                                      e.target.value === ""
+                                                        ? undefined
+                                                        : parseFloat(
+                                                            e.target.value
+                                                          )
+                                                    )
+                                                  }
+                                                  className="mt-1.5"
+                                                />
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  )
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -689,10 +850,10 @@ const WorkoutsListPage: FC = () => {
               </div>
             </ScrollArea>
             <div className="flex justify-end gap-2 border-t pt-4 mt-4">
-              <Button variant="outline" onClick={() => setEditingWorkout(null)}>
+              <Button variant="outline" onClick={() => setEditingSplit(null)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateWorkout}>Save Changes</Button>
+              <Button onClick={handleUpdateSplit}>Save Changes</Button>
             </div>
           </div>
         </DialogContent>
@@ -700,5 +861,4 @@ const WorkoutsListPage: FC = () => {
     </div>
   );
 };
-
-export default WorkoutsListPage;
+export default WorkoutSplitPage;

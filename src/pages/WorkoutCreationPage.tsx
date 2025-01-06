@@ -19,95 +19,140 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, X, Loader2 } from "lucide-react";
-import { Exercise } from "@/type";
-import { workoutClient } from "@/api/WorkoutApi";
+import { Exercise, WorkoutDTO } from "@/type";
 import { useToast } from "@/hooks/use-toast";
+import { splitClient } from "@/api/WorkoutApi";
 
 type ExerciseField = keyof Exercise;
 
-const WorkoutCreationPage: FC = () => {
+const SplitCreationPage: FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [workoutName, setWorkoutName] = useState("");
+  const [splitName, setSplitName] = useState("");
   const [description, setDescription] = useState("");
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [workouts, setWorkouts] = useState<WorkoutDTO[]>([]); // Manages multiple workouts
   const [loading, setLoading] = useState(false);
 
-  const handleAddExercise = () => {
-    setExercises([
-      ...exercises,
+  const handleAddWorkout = () => {
+    setWorkouts([
+      ...workouts,
       {
         name: "",
-        type: "strength",
+        exercises: [],
+        id: "",
       },
     ]);
   };
 
-  const handleRemoveExercise = (index: number) => {
-    setExercises(exercises.filter((_, i) => i !== index));
+  const handleRemoveWorkout = (index: number) => {
+    setWorkouts(workouts.filter((_, i) => i !== index));
+  };
+
+  const handleAddExercise = (workoutIndex: number) => {
+    const updatedWorkouts = [...workouts];
+    updatedWorkouts[workoutIndex].exercises.push({
+      name: "",
+      type: "strength",
+    });
+    setWorkouts(updatedWorkouts);
+  };
+
+  const handleRemoveExercise = (
+    workoutIndex: number,
+    exerciseIndex: number
+  ) => {
+    const updatedWorkouts = [...workouts];
+    updatedWorkouts[workoutIndex].exercises = updatedWorkouts[
+      workoutIndex
+    ].exercises.filter((_, i) => i !== exerciseIndex);
+    setWorkouts(updatedWorkouts);
   };
 
   const updateExercise = (
-    index: number,
+    workoutIndex: number,
+    exerciseIndex: number,
     field: ExerciseField,
     value: string | number | undefined
   ) => {
-    const updatedExercises = [...exercises];
-    updatedExercises[index] = {
-      ...updatedExercises[index],
+    const updatedWorkouts = [...workouts];
+    updatedWorkouts[workoutIndex].exercises[exerciseIndex] = {
+      ...updatedWorkouts[workoutIndex].exercises[exerciseIndex],
       [field]: value,
     };
-    setExercises(updatedExercises);
+    setWorkouts(updatedWorkouts);
   };
 
   const validateForm = (): boolean => {
-    if (!workoutName.trim()) {
+    if (!splitName.trim()) {
       toast({
         variant: "destructive",
         title: "Validation Error",
-        description: "Workout name is required",
+        description: "Split name is required",
       });
       return false;
     }
 
-    if (exercises.length === 0) {
+    if (workouts.length === 0) {
       toast({
         variant: "destructive",
         title: "Validation Error",
-        description: "Add at least one exercise",
+        description: "Add at least one workout",
       });
       return false;
     }
 
-    for (const exercise of exercises) {
-      if (!exercise.name.trim()) {
+    for (const workout of workouts) {
+      if (!workout.name.trim()) {
         toast({
           variant: "destructive",
           title: "Validation Error",
-          description: "All exercises must have a name",
+          description: "All workouts must have a name",
         });
         return false;
       }
 
-      if (exercise.type === "strength" && (!exercise.sets || !exercise.reps)) {
+      if (workout.exercises.length === 0) {
         toast({
           variant: "destructive",
           title: "Validation Error",
-          description: "Strength exercises must have sets and reps",
+          description: "Each workout must have at least one exercise",
         });
         return false;
       }
 
-      if (
-        exercise.type === "cardio" &&
-        (!exercise.duration || !exercise.distance)
-      ) {
-        toast({
-          variant: "destructive",
-          title: "Validation Error",
-          description: "Cardio exercises must have duration and distance",
-        });
-        return false;
+      for (const exercise of workout.exercises) {
+        if (!exercise.name.trim()) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "All exercises must have a name",
+          });
+          return false;
+        }
+
+        if (
+          exercise.type === "strength" &&
+          (!exercise.sets || !exercise.reps)
+        ) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Strength exercises must have sets and reps",
+          });
+          return false;
+        }
+
+        if (
+          exercise.type === "cardio" &&
+          (!exercise.duration || !exercise.distance)
+        ) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Cardio exercises must have duration and distance",
+          });
+          return false;
+        }
       }
     }
 
@@ -119,23 +164,23 @@ const WorkoutCreationPage: FC = () => {
 
     try {
       setLoading(true);
-      const response = await workoutClient.createWorkout({
-        name: workoutName,
-        description: description || undefined,
-        exercises,
+      const response = await splitClient.createSplit({
+        name: splitName,
+        description: description,
+        workouts,
       });
 
       if (response.success) {
         toast({
           title: "Success",
-          description: "Workout created successfully",
+          description: "Split created successfully",
         });
-        navigate("/workouts");
+        navigate("/splits");
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.error || "Failed to create workout",
+          description: response.error || "Failed to create split",
         });
       }
     } catch (error) {
@@ -143,42 +188,49 @@ const WorkoutCreationPage: FC = () => {
         variant: "destructive",
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to create workout",
+          error instanceof Error ? error.message : "Failed to create split",
       });
     } finally {
       setLoading(false);
     }
   };
+
   const isFormComplete = () => {
-    if (!workoutName.trim() || exercises.length === 0) return false;
+    if (!splitName.trim() || workouts.length === 0) return false;
 
-    return exercises.every((exercise) => {
-      if (!exercise.name.trim()) return false;
+    return workouts.every((workout) => {
+      if (!workout.name.trim()) return false;
 
-      if (exercise.type === "strength") {
-        if (!exercise.sets || !exercise.reps) return false;
-      }
+      return workout.exercises.every((exercise) => {
+        if (!exercise.name.trim()) return false;
 
-      if (exercise.type === "cardio") {
-        if (!exercise.duration || !exercise.distance) return false;
-      }
+        if (exercise.type === "strength") {
+          if (!exercise.sets || !exercise.reps) return false;
+        }
 
-      return true;
+        if (exercise.type === "cardio") {
+          if (!exercise.duration || !exercise.distance) return false;
+        }
+
+        return true;
+      });
     });
   };
+
   const handleNumberInput = (
     e: ChangeEvent<HTMLInputElement>,
-    index: number,
+    workoutIndex: number,
+    exerciseIndex: number,
     field: ExerciseField,
     isFloat = false
   ) => {
     const value = e.target.value;
     if (value === "") {
-      updateExercise(index, field, undefined);
+      updateExercise(workoutIndex, exerciseIndex, field, undefined);
     } else {
       const parsedValue = isFloat ? parseFloat(value) : parseInt(value);
       if (!isNaN(parsedValue)) {
-        updateExercise(index, field, parsedValue);
+        updateExercise(workoutIndex, exerciseIndex, field, parsedValue);
       }
     }
   };
@@ -187,18 +239,18 @@ const WorkoutCreationPage: FC = () => {
     <div className="container mx-auto px-4 py-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Create New Workout</CardTitle>
-          <CardDescription>Design your custom workout routine</CardDescription>
+          <CardTitle>Create New Split</CardTitle>
+          <CardDescription>Design your custom split routine</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="workoutName">Workout Name</Label>
+              <Label htmlFor="splitName">Split Name</Label>
               <Input
-                id="workoutName"
-                placeholder="Enter workout name"
-                value={workoutName}
-                onChange={(e) => setWorkoutName(e.target.value)}
+                id="splitName"
+                placeholder="Enter split name"
+                value={splitName}
+                onChange={(e) => setSplitName(e.target.value)}
                 disabled={loading}
               />
             </div>
@@ -207,7 +259,7 @@ const WorkoutCreationPage: FC = () => {
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe your workout"
+                placeholder="Describe your split"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={loading}
@@ -216,142 +268,219 @@ const WorkoutCreationPage: FC = () => {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Exercises</Label>
+                <Label>Workouts</Label>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleAddExercise}
+                  onClick={handleAddWorkout}
                   disabled={loading}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Add Exercise</span>
+                  <span className="hidden sm:inline">Add Workout</span>
                   <span className="sm:hidden">Add</span>
                 </Button>
               </div>
 
-              {exercises.map((exercise, index) => (
-                <Card key={index} className="relative">
+              {workouts.map((workout, workoutIndex) => (
+                <Card key={workoutIndex} className="relative">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="absolute right-2 top-2"
-                    onClick={() => handleRemoveExercise(index)}
+                    onClick={() => handleRemoveWorkout(workoutIndex)}
                     disabled={loading}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Exercise Name</Label>
-                          <Input
-                            placeholder="Enter exercise name"
-                            value={exercise.name}
-                            onChange={(e) =>
-                              updateExercise(index, "name", e.target.value)
-                            }
-                            disabled={loading}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Type</Label>
-                          <Select
-                            value={exercise.type}
-                            onValueChange={(value: "strength" | "cardio") =>
-                              updateExercise(index, "type", value)
+                      <div className="space-y-2">
+                        <Label>Workout Name</Label>
+                        <Input
+                          placeholder="Enter workout name"
+                          value={workout.name}
+                          onChange={(e) =>
+                            setWorkouts((prevState) => {
+                              const updatedWorkouts = [...prevState];
+                              updatedWorkouts[workoutIndex].name =
+                                e.target.value;
+                              return updatedWorkouts;
+                            })
+                          }
+                          disabled={loading}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Label>Exercises</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddExercise(workoutIndex)}
+                          disabled={loading}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          <span className="hidden sm:inline">Add Exercise</span>
+                          <span className="sm:hidden">Add</span>
+                        </Button>
+                      </div>
+
+                      {workout.exercises.map((exercise, exerciseIndex) => (
+                        <Card key={exerciseIndex} className="mt-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-2"
+                            onClick={() =>
+                              handleRemoveExercise(workoutIndex, exerciseIndex)
                             }
                             disabled={loading}
                           >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="strength">Strength</SelectItem>
-                              <SelectItem value="cardio">Cardio</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+                            <X className="h-4 w-4" />
+                          </Button>
+                          <CardContent className="pt-6">
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Exercise Name</Label>
+                                <Input
+                                  placeholder="Enter exercise name"
+                                  value={exercise.name}
+                                  onChange={(e) =>
+                                    updateExercise(
+                                      workoutIndex,
+                                      exerciseIndex,
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  disabled={loading}
+                                />
+                              </div>
 
-                      {exercise.type === "strength" ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Sets</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              placeholder="Number of sets"
-                              value={exercise.sets || ""}
-                              onChange={(e) =>
-                                handleNumberInput(e, index, "sets")
-                              }
-                              disabled={loading}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Reps</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              placeholder="Number of reps"
-                              value={exercise.reps || ""}
-                              onChange={(e) =>
-                                handleNumberInput(e, index, "reps")
-                              }
-                              disabled={loading}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Duration (minutes)</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              placeholder="Duration"
-                              value={exercise.duration || ""}
-                              onChange={(e) =>
-                                handleNumberInput(e, index, "duration")
-                              }
-                              disabled={loading}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Distance (km)</Label>
-                            <Input
-                              type="number"
-                              min="0.1"
-                              step="0.1"
-                              placeholder="Distance"
-                              value={exercise.distance || ""}
-                              onChange={(e) =>
-                                handleNumberInput(e, index, "distance", true)
-                              }
-                              disabled={loading}
-                            />
-                          </div>
-                        </div>
-                      )}
+                              <div className="space-y-2">
+                                <Label>Type</Label>
+                                <Select
+                                  value={exercise.type}
+                                  onValueChange={(value) =>
+                                    updateExercise(
+                                      workoutIndex,
+                                      exerciseIndex,
+                                      "type",
+                                      value
+                                    )
+                                  }
+                                  disabled={loading}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="strength">
+                                      Strength
+                                    </SelectItem>
+                                    <SelectItem value="cardio">
+                                      Cardio
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {exercise.type === "strength" && (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Sets</Label>
+                                    <Input
+                                      type="number"
+                                      value={exercise.sets}
+                                      onChange={(e) =>
+                                        handleNumberInput(
+                                          e,
+                                          workoutIndex,
+                                          exerciseIndex,
+                                          "sets"
+                                        )
+                                      }
+                                      disabled={loading}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Reps</Label>
+                                    <Input
+                                      type="number"
+                                      value={exercise.reps}
+                                      onChange={(e) =>
+                                        handleNumberInput(
+                                          e,
+                                          workoutIndex,
+                                          exerciseIndex,
+                                          "reps"
+                                        )
+                                      }
+                                      disabled={loading}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {exercise.type === "cardio" && (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Duration (mins)</Label>
+                                    <Input
+                                      type="number"
+                                      value={exercise.duration}
+                                      onChange={(e) =>
+                                        handleNumberInput(
+                                          e,
+                                          workoutIndex,
+                                          exerciseIndex,
+                                          "duration",
+                                          true
+                                        )
+                                      }
+                                      disabled={loading}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Distance (km)</Label>
+                                    <Input
+                                      type="number"
+                                      value={exercise.distance}
+                                      onChange={(e) =>
+                                        handleNumberInput(
+                                          e,
+                                          workoutIndex,
+                                          exerciseIndex,
+                                          "distance",
+                                          true
+                                        )
+                                      }
+                                      disabled={loading}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
+
             <Button
               onClick={handleSubmit}
               className="w-full"
               disabled={loading || !isFormComplete()}
             >
               {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Workout...
-                </>
+                <Loader2 className="animate-spin mr-2" />
               ) : (
-                "Create Workout"
+                "Create Split"
               )}
             </Button>
           </div>
@@ -361,4 +490,4 @@ const WorkoutCreationPage: FC = () => {
   );
 };
 
-export default WorkoutCreationPage;
+export default SplitCreationPage;

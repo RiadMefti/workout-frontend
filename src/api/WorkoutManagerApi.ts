@@ -21,14 +21,6 @@ export class WorkoutManagerClient extends ApiClient {
       method: "GET",
     });
   }
-
-  // Get user's active workout
-  public async getUserActiveWorkout(): Promise<ApiResponse<WorkoutRecordDTO>> {
-    return this.fetchApi<WorkoutRecordDTO>("/workout-manager/active-workout", {
-      method: "GET",
-    });
-  }
-
   // Post a new active workout record
   public async postUserActiveWorkout(
     workoutId: string,

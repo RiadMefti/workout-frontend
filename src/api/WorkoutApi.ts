@@ -1,49 +1,42 @@
 // src/api/WorkoutApi.ts
-import { ApiResponse, WorkoutDTO } from "@/type";
+import { ApiResponse, WorkoutSplitDTO } from "@/type"; // Assuming SplitDTO is defined similarly to WorkoutDTO
 import { ApiClient } from "./clientApi";
 
-export class WorkoutClient extends ApiClient {
+export class SplitClient extends ApiClient {
   constructor(baseUrl: string) {
     super(baseUrl);
   }
 
-  // Get all workouts
-  public async getWorkouts(): Promise<ApiResponse<WorkoutDTO[]>> {
-    return this.fetchApi<WorkoutDTO[]>("/workout", {
+  // Get all splits
+  public async getSplits(): Promise<ApiResponse<WorkoutSplitDTO[]>> {
+    return this.fetchApi<WorkoutSplitDTO[]>("/workout", {
       method: "GET",
     });
   }
 
-  // Get single workout by ID
-  public async getWorkout(id: string): Promise<ApiResponse<WorkoutDTO>> {
-    return this.fetchApi<WorkoutDTO>(`/workout/${id}`, {
-      method: "GET",
-    });
-  }
-
-  // Create new workout
-  public async createWorkout(
-    data: Omit<WorkoutDTO, "id">
-  ): Promise<ApiResponse<WorkoutDTO>> {
-    return this.fetchApi<WorkoutDTO>("/workout", {
+  // Create new split
+  public async createSplit(
+    data: Omit<WorkoutSplitDTO, "id">
+  ): Promise<ApiResponse<WorkoutSplitDTO>> {
+    return this.fetchApi<WorkoutSplitDTO>("/workout", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  // Update existing workout
-  public async editWorkout(
+  // Update existing split
+  public async editSplit(
     id: string,
-    data: Partial<WorkoutDTO>
-  ): Promise<ApiResponse<WorkoutDTO>> {
-    return this.fetchApi<WorkoutDTO>(`/workout/${id}`, {
+    data: Partial<WorkoutSplitDTO>
+  ): Promise<ApiResponse<WorkoutSplitDTO>> {
+    return this.fetchApi<WorkoutSplitDTO>(`/workout/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  // Delete workout
-  public async deleteWorkout(
+  // Delete split
+  public async deleteSplit(
     id: string
   ): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi<{ message: string }>(`/workout/${id}`, {
@@ -51,23 +44,42 @@ export class WorkoutClient extends ApiClient {
     });
   }
 
-  // Helper method to process workout data before sending
-  private validateWorkoutData(data: Partial<WorkoutDTO>): void {
-    if ("exercises" in data) {
-      data.exercises?.forEach((exercise) => {
-        if (exercise.type === "strength") {
-          // Remove cardio-specific fields for strength exercises
-          delete exercise.duration;
-          delete exercise.distance;
-        } else if (exercise.type === "cardio") {
-          // Remove strength-specific fields for cardio exercises
-          delete exercise.sets;
-          delete exercise.reps;
-        }
-      });
-    }
+  public async getUserNextWorkoutIndex(): Promise<ApiResponse<number>> {
+    return this.fetchApi<number>("/workout/next-workout-index", {
+      method: "GET",
+    });
+  }
+
+  // Increment user's next workout index
+  public async incrementUserNextWorkoutIndex(
+    index: number
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.fetchApi<{ message: string }>(
+      `/workout/next-workout-index/${index}`,
+      {
+        method: "PUT",
+      }
+    );
+  }
+  // Get active split
+  public async getActiveSplit(): Promise<ApiResponse<string | null>> {
+    return this.fetchApi<string | null>("/workout/active-split", {
+      method: "GET",
+    });
+  }
+
+  // Set active split
+  public async setActiveSplit(
+    splitId: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.fetchApi<{ message: string }>(
+      `/workout/active-split/${splitId}`,
+      {
+        method: "POST",
+      }
+    );
   }
 }
 
 // Export a singleton instance
-export const workoutClient = new WorkoutClient(import.meta.env.VITE_API_URL);
+export const splitClient = new SplitClient(import.meta.env.VITE_API_URL);
