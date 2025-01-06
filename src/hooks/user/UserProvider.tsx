@@ -21,7 +21,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         name: decoded.name,
         email: decoded.email,
         profile_picture: decoded.profile_picture,
-        next_workout: decoded.next_workout,
+        active_split: decoded.active_split,
       });
     } else {
       setUser(null);
