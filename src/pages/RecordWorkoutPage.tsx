@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,47 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { WorkoutDTO, WorkoutRecordDTO } from "@/type";
-import { Dumbbell, Timer } from "lucide-react";
-
-// Mock active workout data
-const MOCK_ACTIVE_WORKOUT: WorkoutDTO = {
-  id: "1",
-  name: "Full Body Strength",
-  description: "Complete full body workout focusing on major muscle groups",
-  exercises: [
-    {
-      name: "Bench Press",
-      type: "strength",
-      sets: 3,
-      reps: 10,
-    },
-    {
-      name: "Squats",
-      type: "strength",
-      sets: 4,
-      reps: 8,
-    },
-    {
-      name: "Deadlifts",
-      type: "strength",
-      sets: 3,
-      reps: 8,
-    },
-    {
-      name: "Pull-ups",
-      type: "strength",
-      sets: 3,
-      reps: 10,
-    },
-    {
-        name: "Treadmill Run",
-        type: "cardio",
-        duration: 30,
-        distance: 0,
-    }
-  ],
-};
+import { WorkoutDTO, WorkoutRecordDTO, WorkoutSplitDTO } from "@/type";
+import { Dumbbell, Loader2, Timer } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { splitClient } from "@/api/WorkoutApi";
+import { workoutManagerClient } from "@/api/WorkoutManagerApi";
 
 interface ExerciseRecordProps {
   exercise: WorkoutDTO["exercises"][0];
@@ -173,20 +137,108 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
 };
 
 const RecordWorkoutPage: FC = () => {
-  const [currentRecord, setCurrentRecord] = useState<WorkoutRecordDTO>({
-    id: crypto.randomUUID(),
-    workoutId: MOCK_ACTIVE_WORKOUT.id,
-    date: new Date(),
-    exercises: MOCK_ACTIVE_WORKOUT.exercises.map((exercise) => ({
-      name: exercise.name,
-      type: exercise.type,
-    })),
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeSplit, setActiveSplit] = useState<WorkoutSplitDTO | null>(null);
+  const [nextWorkoutIndex, setNextWorkoutIndex] = useState<number>(0);
+  const [currentWorkout, setCurrentWorkout] = useState<WorkoutDTO | null>(null);
+  const [currentRecord, setCurrentRecord] = useState<WorkoutRecordDTO | null>(
+    null
+  );
+  const { toast } = useToast();
+
+  // Fetch initial data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch the user's next workout index
+        const indexResponse = await splitClient.getUserNextWorkoutIndex();
+        if (!indexResponse.success) {
+          throw new Error(
+            indexResponse.error || "Failed to fetch next workout index"
+          );
+        }
+        const nextIndex = indexResponse.data;
+
+        // Fetch active split
+        const splitResponse = await splitClient.getActiveSplit();
+        if (!splitResponse.success) {
+          throw new Error(
+            splitResponse.error || "Failed to fetch active split"
+          );
+        }
+        const activeSplitId = splitResponse.data;
+
+        // Fetch all splits to find the active one
+        const splitsResponse = await splitClient.getSplits();
+        if (!splitsResponse.success) {
+          throw new Error(splitsResponse.error || "Failed to fetch splits");
+        }
+
+        const foundSplit = splitsResponse.data.find(
+          (split) => split.name === activeSplitId
+        );
+        if (!foundSplit) {
+          setError("No active split found. Please set an active split first.");
+          return;
+        }
+
+        setActiveSplit(foundSplit);
+        setNextWorkoutIndex(nextIndex);
+
+        // Set current workout based on index
+        if (nextIndex >= foundSplit.workouts.length) {
+          // Reset to 0 if index is out of range
+          await splitClient.incrementUserNextWorkoutIndex(0);
+          setNextWorkoutIndex(0);
+          setCurrentWorkout(foundSplit.workouts[0]);
+        } else {
+          setCurrentWorkout(foundSplit.workouts[nextIndex]);
+        }
+
+        // Initialize workout record
+        if (foundSplit.workouts[nextIndex]) {
+          const currentWorkout = foundSplit.workouts[nextIndex];
+          setCurrentWorkout(currentWorkout);
+          setCurrentRecord({
+            id: foundSplit.id,
+            workoutName: currentWorkout.name,
+            date: new Date(),
+            exercises: currentWorkout.exercises.map((exercise) => ({
+              name: exercise.name,
+              type: exercise.type,
+              ...(exercise.type === "strength"
+                ? { bestReps: undefined, bestWeight: undefined }
+                : { duration: undefined, distance: undefined }),
+            })),
+          });
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(message);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: message,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [toast]);
 
   const handleExerciseUpdate = (
     index: number,
     update: Partial<WorkoutRecordDTO["exercises"][0]>
   ) => {
+    if (!currentRecord) return;
+
     const updatedExercises = [...currentRecord.exercises];
     updatedExercises[index] = {
       ...updatedExercises[index],
@@ -198,16 +250,78 @@ const RecordWorkoutPage: FC = () => {
     });
   };
 
-  const isSubmitDisabled = currentRecord.exercises.some((exercise) => {
+  const isSubmitDisabled = !currentRecord?.exercises.every((exercise) => {
     if (exercise.type === "strength") {
-      return !exercise.bestWeight || !exercise.bestReps;
+      return exercise.bestWeight && exercise.bestReps;
     }
-    return !exercise.duration || !exercise.distance;
+    return exercise.duration && exercise.distance;
   });
 
-  const handleSubmit = () => {
-    console.log("Submitting workout record:", currentRecord);
+  const handleSubmit = async () => {
+    if (!activeSplit || !currentRecord || !currentWorkout) return;
+
+    try {
+      // Save the workout record
+      const recordResponse = await workoutManagerClient.postUserActiveWorkout(
+        currentRecord
+      );
+
+      if (!recordResponse.success) {
+        throw new Error(recordResponse.error);
+      }
+
+      // Update the next workout index
+      const nextIndex = (nextWorkoutIndex + 1) % activeSplit.workouts.length;
+      const indexResponse = await splitClient.incrementUserNextWorkoutIndex(
+        nextIndex
+      );
+
+      if (!indexResponse.success) {
+        throw new Error(indexResponse.error);
+      }
+
+      toast({
+        title: "Success",
+        description: "Workout recorded successfully!",
+      });
+
+      // Refresh the page to show the next workout
+      window.location.reload();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to record workout",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading workout...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !currentWorkout || !currentRecord) {
+    return (
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>No Workout Available</CardTitle>
+            <CardDescription>
+              {error || "Please set up an active workout split to continue."}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-3xl">
@@ -215,9 +329,9 @@ const RecordWorkoutPage: FC = () => {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle>{MOCK_ACTIVE_WORKOUT.name}</CardTitle>
+              <CardTitle>{currentWorkout.name}</CardTitle>
               <CardDescription>
-                {MOCK_ACTIVE_WORKOUT.description}
+                Workout {nextWorkoutIndex + 1} of {activeSplit?.workouts.length}
               </CardDescription>
             </div>
             <Button onClick={handleSubmit} disabled={isSubmitDisabled}>
@@ -227,7 +341,7 @@ const RecordWorkoutPage: FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {MOCK_ACTIVE_WORKOUT.exercises.map((exercise, index) => (
+            {currentWorkout.exercises.map((exercise, index) => (
               <ExerciseRecord
                 key={exercise.name}
                 exercise={exercise}

@@ -23,21 +23,12 @@ export class WorkoutManagerClient extends ApiClient {
   }
   // Post a new active workout record
   public async postUserActiveWorkout(
-    workoutId: string,
-    exercises: Array<{
-      name: string;
-      type: "strength" | "cardio";
-      bestReps?: number;
-      bestWeight?: number;
-      duration?: number;
-      distance?: number;
-    }>
+    workoutRecord: WorkoutRecordDTO
   ): Promise<ApiResponse<WorkoutRecordDTO>> {
     return this.fetchApi<WorkoutRecordDTO>("/workout-manager/active-workout", {
       method: "POST",
       body: JSON.stringify({
-        workoutId,
-        exercises,
+        workoutRecord,
       }),
     });
   }

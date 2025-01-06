@@ -57,7 +57,7 @@ export class SplitClient extends ApiClient {
     return this.fetchApi<{ message: string }>(
       `/workout/next-workout-index/${index}`,
       {
-        method: "PUT",
+        method: "POST",
       }
     );
   }

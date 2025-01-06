@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useMemo } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -59,10 +59,7 @@ const WorkoutSplitPage: FC = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const activeSplit = useMemo(
-    () => splits.find((s) => s.name === activeSplitId),
-    [splits, activeSplitId]
-  );
+  const activeSplit = splits.find((s) => s.name === activeSplitId);
 
   // Fetch active split and splits
   const fetchData = async () => {
