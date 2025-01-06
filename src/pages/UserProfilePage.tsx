@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -7,23 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { User, Mail, Calendar, ExternalLink } from "lucide-react";
+import { User, Mail } from "lucide-react";
 import { useUser } from "@/hooks/user/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { splitClient } from "@/api/WorkoutApi";
 
 const UserProfilePage: FC = () => {
-  const navigate = useNavigate();
   const { user } = useUser();
-
-  async function getActiveSplit(): Promise<string | null> {
-    const activeSplit = await splitClient.getActiveSplit();
-    if (activeSplit.success) {
-      return activeSplit.data;
-    }
-    return null;
-  }
 
   if (!user) {
     return (
