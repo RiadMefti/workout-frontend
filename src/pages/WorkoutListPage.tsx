@@ -449,7 +449,7 @@ const WorkoutSplitPage: FC = () => {
                       </TableCell>
                       <TableCell>{split.workouts.length}</TableCell>
                       <TableCell>
-                        {split.name === activeSplitId ? (
+                        {split.id === activeSplitId ? (
                           <Badge
                             variant="default"
                             className="bg-green-600 text-white"
@@ -465,7 +465,7 @@ const WorkoutSplitPage: FC = () => {
                           <Button
                             size="sm"
                             onClick={() => handleSetActiveSplit(split.id)}
-                            disabled={split.name === activeSplitId}
+                            disabled={split.id === activeSplitId}
                           >
                             Set Active
                           </Button>
