@@ -56,10 +56,15 @@ const WorkoutSplitPage: FC = () => {
   );
   const [activeSplitId, setActiveSplitId] = useState<string | null>(null);
   const [splits, setSplits] = useState<WorkoutSplitDTO[]>([]);
+  const [activeSplit, setActiveSplit] = useState<WorkoutSplitDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const activeSplit = splits.find((s) => s.name === activeSplitId);
+  useEffect(() => {
+    setActiveSplit(
+      splits.find((s: WorkoutSplitDTO) => s.id === activeSplitId) || null
+    );
+  }, [activeSplitId, splits]);
 
   // Fetch active split and splits
   const fetchData = async () => {
@@ -459,7 +464,7 @@ const WorkoutSplitPage: FC = () => {
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleSetActiveSplit(split.name)}
+                            onClick={() => handleSetActiveSplit(split.id)}
                             disabled={split.name === activeSplitId}
                           >
                             Set Active
