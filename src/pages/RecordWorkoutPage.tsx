@@ -179,7 +179,7 @@ const RecordWorkoutPage: FC = () => {
         }
 
         const foundSplit = splitsResponse.data.find(
-          (split) => split.name === activeSplitId
+          (split) => split.id === activeSplitId
         );
         if (!foundSplit) {
           setError("No active split found. Please set an active split first.");
