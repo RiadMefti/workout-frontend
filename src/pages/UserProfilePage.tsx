@@ -11,10 +11,19 @@ import { Button } from "@/components/ui/button";
 import { User, Mail, Calendar, ExternalLink } from "lucide-react";
 import { useUser } from "@/hooks/user/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { splitClient } from "@/api/WorkoutApi";
 
 const UserProfilePage: FC = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+
+  async function getActiveSplit(): Promise<string | null> {
+    const activeSplit = await splitClient.getActiveSplit();
+    if (activeSplit.success) {
+      return activeSplit.data;
+    }
+    return null;
+  }
 
   if (!user) {
     return (
@@ -70,28 +79,7 @@ const UserProfilePage: FC = () => {
               <p className="font-medium">{user.email}</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary/20">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Next Workout</p>
-              <p className="font-medium">
-                {user.next_workout ?? "No workout scheduled"}
-              </p>
-            </div>
-          </div>
         </div>
-
-        {/* Actions */}
-        {user.next_workout && (
-          <Button 
-            className="w-full" 
-            onClick={() => navigate("/next-workout")}
-          >
-            Go to Next Workout
-            <ExternalLink className="ml-2 h-4 w-4" />
-          </Button>
-        )}
       </CardContent>
     </Card>
   );
