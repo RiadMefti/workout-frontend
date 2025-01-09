@@ -10,6 +10,7 @@ import { User, Mail } from "lucide-react";
 import { useUser } from "@/hooks/user/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
+//The UserProfilePage component displays the user's profile information.
 const UserProfilePage: FC = () => {
   const { user } = useUser();
 

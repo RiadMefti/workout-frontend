@@ -42,6 +42,7 @@ const features = [
   },
 ];
 
+//The HomePage component is the landing page for the application.
 const HomePage: FC = () => {
   const navigate = useNavigate();
 

@@ -47,6 +47,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+//The WorkoutSplitPage component displays a list of workout splits.
+//It allows the user to view, edit, and delete workout splits.
+//The user can also set an active split to use in their workout routine.
 const WorkoutSplitPage: FC = () => {
   const [selectedSplit, setSelectedSplit] = useState<WorkoutSplitDTO | null>(
     null

@@ -6,6 +6,13 @@ if (!API_URL) {
   throw new Error("API_URL is not defined in environment variables");
 }
 
+//This is the base class for all API clients. It contains the common logic for making API requests.
+//The constructor takes the base URL of the API as an argument. The publicEndpoints property is an array of endpoints that don't require authentication.
+//The getAuthToken method retrieves the authentication token from local storage.
+//The isPublicEndpoint method checks if an endpoint is public or not.
+//The fetchApi method makes a request to the API with the given endpoint and options.
+//It adds the necessary headers for authentication and handles the response status codes.
+//If the response status is 401 (unauthorized), it clears the authentication token from local storage and redirects the user to the login page.
 export class ApiClient {
   protected baseUrl: string;
   protected publicEndpoints: string[] = [];

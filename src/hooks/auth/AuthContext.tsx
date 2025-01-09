@@ -9,6 +9,8 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
+
+//The useAuth hook provides access to the AuthContext.
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

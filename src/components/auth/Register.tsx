@@ -7,6 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { authClient } from "../../api/AuthApi";
 import { useAuth } from "../../hooks/auth/AuthContext";
 
+//The Register component is a form that allows users to register a new account.
+//It uses the authClient to make a request to the API to register the user.
+//If the registration is successful, it stores the authentication token in local storage and redirects the user to the home page.
+//If there is an error during registration, it displays an error message to the user.
+
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

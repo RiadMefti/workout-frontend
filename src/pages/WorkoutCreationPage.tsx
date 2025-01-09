@@ -25,6 +25,11 @@ import { splitClient } from "@/api/WorkoutApi";
 
 type ExerciseField = keyof Exercise;
 
+
+//The SplitCreationPage component allows users to create a new workout split.
+//It allows users to add multiple workouts, each with multiple exercises.
+//It validates the form and sends a request to the API to create the split.
+//If the split is created successfully, it redirects the user to the splits page.
 const SplitCreationPage: FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();

@@ -6,6 +6,9 @@ interface PublicRouteProps {
   children: ReactNode;
 }
 
+
+//The PublicRoute component is a wrapper for routes that do not require authentication.
+//It redirects authenticated users to the /dashboard route.
 export const PublicRoute: FC<PublicRouteProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
 

@@ -8,6 +8,7 @@ interface UserContextType {
 
 export const UserContext = createContext<UserContextType | null>(null);
 
+//The useUser hook provides access to the UserContext.
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

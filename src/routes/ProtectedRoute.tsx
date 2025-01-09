@@ -6,6 +6,8 @@ interface ProtectedRouteProps {
   children: ReactNode;
 }
 
+//The ProtectedRoute component is a wrapper for routes that require authentication.
+//It redirects unauthenticated users to the /auth route.
 export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();

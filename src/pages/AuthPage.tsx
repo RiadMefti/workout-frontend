@@ -11,6 +11,10 @@ import {
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+//The AuthPage component is the page for the authentication flow.
+//It contains the login and register forms.
+//The mode is determined by the URL path (/auth/login or /auth/register).
+
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const { mode } = useParams();

@@ -31,6 +31,7 @@ import {
 } from "date-fns";
 import { workoutManagerClient } from "@/api/WorkoutManagerApi";
 
+// the constants DAYS, DAYS_FULL, and COLOR_PALETTE are used to generate the calendar days and colors for the workout types.
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 const DAYS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const COLOR_PALETTE = [
@@ -44,11 +45,19 @@ const COLOR_PALETTE = [
   "bg-orange-500",
 ];
 
+//The createDate function is used to create a Date object from a string or Date object.
 const createDate = (dateString: string | Date) => {
   return startOfDay(
     typeof dateString === "string" ? parseISO(dateString) : dateString
   );
 };
+
+//The WorkoutCalendar component displays a calendar of workout records.
+//It fetches the workout records from the API and displays them in a calendar format.
+//The calendar days are generated dynamically based on the current date and the workout records.
+//The workout records are color-coded based on the workout type.
+//The user can click on a day to view the workouts for that day.
+//The user can click on a workout to view the details of the workout.
 
 const WorkoutCalendar = () => {
   const [currentDate, setCurrentDate] = useState(startOfDay(new Date()));

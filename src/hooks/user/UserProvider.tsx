@@ -9,6 +9,9 @@ interface DecodedToken extends UserDTO {
   iat: number;
 }
 
+//The UserProvider component provides the user object to the UserContext.
+//It decodes the authentication token to get the user object.
+//The UserProvider component wraps the rest of the application in the UserContext.Provider.
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
   const [user, setUser] = useState<UserDTO | null>(null);

@@ -18,6 +18,7 @@ export class AuthClient extends ApiClient {
     this.publicEndpoints = ["/auth/login", "/auth/register"];
   }
 
+  // Register a new user
   public async register(
     data: RegisterData
   ): Promise<ApiResponse<AuthResponse>> {
@@ -27,6 +28,7 @@ export class AuthClient extends ApiClient {
     });
   }
 
+  // Login a user
   public async login(data: LoginData): Promise<ApiResponse<AuthResponse>> {
     return this.fetchApi<AuthResponse>("/auth/login", {
       method: "POST",

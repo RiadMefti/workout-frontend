@@ -13,6 +13,8 @@ import { PublicRoute } from "./routes/PublicRoute";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { Toaster } from "./components/ui/toaster";
 
+//The App component is the root component of the application.
+//It contains the routing configuration for the application.
 function App() {
   return (
     <Providers>

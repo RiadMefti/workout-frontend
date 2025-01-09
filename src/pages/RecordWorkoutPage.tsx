@@ -136,6 +136,10 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
   );
 };
 
+//The RecordWorkoutPage component is a functional component that displays the current workout for the user to record.
+//It fetches the active split and the next workout index from the server and displays the workout details.
+// The user can record the workout by entering the details for each exercise.
+// Once the user has entered all the details, they can submit the workout record, which will be saved to the server.
 const RecordWorkoutPage: FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

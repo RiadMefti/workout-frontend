@@ -7,6 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth/AuthContext";
 import { authClient } from "@/api/AuthApi";
 
+//The Login component is a form that allows users to log in to their account.
+//It uses the authClient to make a request to the API to log in the user.
+//If the login is successful, it stores the authentication token in local storage and redirects the user to the home page.
+//If there is an error during login, it displays an error message to the user.
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

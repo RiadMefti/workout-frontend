@@ -25,6 +25,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+//Navigation items for the sidebar
 const navItems = [
   {
     title: "Next Workout",
@@ -53,6 +54,12 @@ const navItems = [
   },
 ];
 
+//The AppLayout component is the layout for the entire application.
+//It contains the sidebar navigation and the main content area.
+//The sidebar navigation is hidden on mobile and displayed on desktop.
+//The navigation items are defined in the navItems array.
+//The AppLayout component uses the useAuth hook to handle user authentication.
+//It provides a logout button that calls the logout method from the useAuth hook.
 const AppLayout: FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
