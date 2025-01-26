@@ -46,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
 //The WorkoutSplitPage component displays a list of workout splits.
 //It allows the user to view, edit, and delete workout splits.
@@ -62,7 +63,7 @@ const WorkoutSplitPage: FC = () => {
   const [activeSplit, setActiveSplit] = useState<WorkoutSplitDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   useEffect(() => {
     setActiveSplit(
       splits.find((s: WorkoutSplitDTO) => s.id === activeSplitId) || null
@@ -421,72 +422,89 @@ const WorkoutSplitPage: FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Mobile View */}
-          {splits.map((split) => (
-            <SplitListItem key={split.id} split={split} />
-          ))}
-
-          {/* Desktop View */}
-          <div className="hidden sm:block">
-            <div className="border rounded-md">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead className="w-[300px]">Description</TableHead>
-                    <TableHead className="w-[100px]">Workouts</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {splits.map((split) => (
-                    <TableRow key={split.id}>
-                      <TableCell className="font-medium">
-                        {split.name}
-                      </TableCell>
-                      <TableCell>
-                        <span className="line-clamp-1">
-                          {split.description || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell>{split.workouts.length}</TableCell>
-                      <TableCell>
-                        {split.id === activeSplitId ? (
-                          <Badge
-                            variant="default"
-                            className="bg-green-600 text-white"
-                          >
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">Inactive</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleSetActiveSplit(split.id)}
-                            disabled={split.id === activeSplitId}
-                          >
-                            Set Active
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedSplit(split)}
-                          >
-                            Details
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          {splits.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-gray-500 mb-4">
+                No splits available. Please create a workout split to continue.
+              </p>
+              <Button
+                onClick={() => {
+                  navigate("/create-workout");
+                }}
+              >
+                Create Workout Split
+              </Button>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Mobile View */}
+              {splits.map((split) => (
+                <SplitListItem key={split.id} split={split} />
+              ))}
+
+              {/* Desktop View */}
+              <div className="hidden sm:block">
+                <div className="border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[200px]">Name</TableHead>
+                        <TableHead className="w-[300px]">Description</TableHead>
+                        <TableHead className="w-[100px]">Workouts</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {splits.map((split) => (
+                        <TableRow key={split.id}>
+                          <TableCell className="font-medium">
+                            {split.name}
+                          </TableCell>
+                          <TableCell>
+                            <span className="line-clamp-1">
+                              {split.description || "—"}
+                            </span>
+                          </TableCell>
+                          <TableCell>{split.workouts.length}</TableCell>
+                          <TableCell>
+                            {split.id === activeSplitId ? (
+                              <Badge
+                                variant="default"
+                                className="bg-green-600 text-white"
+                              >
+                                Active
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">Inactive</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleSetActiveSplit(split.id)}
+                                disabled={split.id === activeSplitId}
+                              >
+                                Set Active
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedSplit(split)}
+                              >
+                                Details
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

@@ -38,12 +38,12 @@ const navItems = [
     href: "/dashboard",
   },
   {
-    title: "Create Workout",
+    title: "Create workout split",
     icon: <ListPlus className="h-5 w-5" />,
     href: "/create-workout",
   },
   {
-    title: "Workouts",
+    title: "My workout splits",
     icon: <List className="h-5 w-5" />,
     href: "/workouts",
   },

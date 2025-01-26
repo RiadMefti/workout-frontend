@@ -15,6 +15,7 @@ import { Dumbbell, Loader2, Timer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { splitClient } from "@/api/WorkoutApi";
 import { workoutManagerClient } from "@/api/WorkoutManagerApi";
+import { useNavigate } from "react-router-dom";
 
 interface ExerciseRecordProps {
   exercise: WorkoutDTO["exercises"][0];
@@ -150,7 +151,7 @@ const RecordWorkoutPage: FC = () => {
     null
   );
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
@@ -322,6 +323,16 @@ const RecordWorkoutPage: FC = () => {
               {error || "Please set up an active workout split to continue."}
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            {" "}
+            <Button
+              onClick={() => {
+                navigate("/workouts");
+              }}
+            >
+              Set active split
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
