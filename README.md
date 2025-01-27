@@ -13,6 +13,10 @@ Workout Tracker is a web application designed to help users manage and track the
 - **View Workout History**: Users can view their workout history and analyze their performance over time.
 - **Responsive Design**: The app is designed to work seamlessly on both desktop and mobile devices.
 
+## Live Application
+
+Visit the live application at: [v2.workoutmadeeasy.com](https://v2.workoutmadeeasy.com)
+
 ## Related Repositories
 
 - Backend Repository: [workout-backend](https://github.com/RiadMefti/workout-backend)
@@ -30,6 +34,7 @@ Workout Tracker is a web application designed to help users manage and track the
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - Node.js (version 16.0 or higher)
 - npm (version 7.0 or higher)
 
@@ -38,27 +43,32 @@ Before you begin, ensure you have the following installed:
 To get started with the Workout Tracker app, follow these steps:
 
 1. Clone the repository:
+
    ```sh
    git clone https://github.com/your-username/workout-tracker.git
    cd workout-tracker
    ```
 
 2. Install dependencies:
+
    ```sh
    npm install
    ```
 
 3. Create a `.env` file in the root directory and add required environment variables:
+
    ```sh
    VITE_API_URL=your_api_url_here
    ```
 
 4. Run the development server:
+
    ```sh
    npm run dev
    ```
 
 5. Build the project:
+
    ```sh
    npm run build
    ```
