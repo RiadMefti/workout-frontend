@@ -85,7 +85,7 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
           {exercise.type === "strength" ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Weight (kg)</Label>
+                <Label>Weight (lbs)</Label>
                 <Input
                   type="number"
                   min="0"
@@ -96,7 +96,7 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Best Reps</Label>
+                <Label>Best Reps try {exercise.reps}</Label>
                 <Input
                   type="number"
                   min="0"
@@ -109,7 +109,7 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Duration (min)</Label>
+                <Label>Duration (min) try {exercise.duration}</Label>
                 <Input
                   type="number"
                   min="0"
