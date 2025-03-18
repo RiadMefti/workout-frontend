@@ -25,8 +25,9 @@ import {
   Loader2,
   Search,
   Dumbbell,
-  Heart,
   ChevronDown,
+  PersonStanding,
+  Zap,
 } from "lucide-react";
 import { Exercise, WorkoutDTO } from "@/type";
 import { useToast } from "@/hooks/use-toast";
@@ -382,18 +383,20 @@ const SplitCreationPage: FC = () => {
     }
   };
 
-  const getEquipmentIcon = (equipment: Equipment): JSX.Element | string => {
+  const getEquipmentIcon = (equipment: Equipment): JSX.Element => {
     switch (equipment) {
       case Equipment.Barbell:
+        return <Dumbbell className="h-4 w-4" />;
       case Equipment.Dumbbell:
+        return <Dumbbell className="h-4 w-4" />;
       case Equipment.Kettlebell:
         return <Dumbbell className="h-4 w-4" />;
       case Equipment.BodyWeight:
-        return "🧍";
+        return <PersonStanding className="h-4 w-4" />;
       case Equipment.Cardio:
-        return <Heart className="h-4 w-4" />;
+        return <Zap className="h-4 w-4" />;
       default:
-        return "";
+        return <Dumbbell className="h-4 w-4" />;
     }
   };
 
@@ -456,7 +459,6 @@ const SplitCreationPage: FC = () => {
                   onClick={handleAddWorkout}
                   disabled={loading}
                   size="sm"
-              
                 >
                   <Plus className="sm:mr-2 h-4 w-4" />
                   <span className="hidden sm:inline">Add Workout Day</span>
