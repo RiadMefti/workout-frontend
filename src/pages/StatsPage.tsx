@@ -472,22 +472,27 @@ const StatsPage = () => {
   }
 
   return (
-    <div className="container py-6 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6 sm:space-y-8">
+      {" "}
+      {/* reduced vertical spacing on mobile */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">Workout Statistics</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Workout Statistics</h1>{" "}
+        {/* smaller text on mobile */}
+        <p className="text-sm sm:text-base text-muted-foreground">
           Track your progress and gain insights from your workout history
         </p>
       </div>
-
       {/* Time range filter */}
-      <div className="flex items-center gap-2">
-        <span>Time period:</span>
+      <div className="flex flex-wrap items-center gap-2 pb-2">
+        <span className="text-sm sm:text-base">Time period:</span>{" "}
+        {/* smaller text on mobile */}
         <Select
           value={timeRange}
           onValueChange={(value) => setTimeRange(value as TimeRangeOption)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[140px] sm:w-[180px] h-9 text-sm">
+            {" "}
+            {/* smaller on mobile */}
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
           <SelectContent>
@@ -499,102 +504,118 @@ const StatsPage = () => {
           </SelectContent>
         </Select>
       </div>
-
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {" "}
+        {/* 2 columns on mobile, more compact spacing */}
+        <Card className="overflow-hidden">
+          {" "}
+          {/* prevent overflow */}
+          <CardHeader className="p-3 sm:pb-2 sm:p-6">
+            {" "}
+            {/* smaller padding on mobile */}
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Total Workouts
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            {" "}
+            {/* smaller padding on mobile */}
             <div className="flex items-center">
-              <Calendar className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary mr-2" />{" "}
+              {/* smaller icon on mobile */}
+              <span className="text-xl sm:text-2xl font-bold">
                 {summaryMetrics.totalWorkouts}
               </span>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="overflow-hidden">
+          <CardHeader className="p-3 sm:pb-2 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
               Weekly Average
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             <div className="flex items-center">
-              <Activity className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary mr-2" />
+              <span className="text-xl sm:text-2xl font-bold">
                 {summaryMetrics.weeklyAverage}
               </span>
-              <span className="ml-1 text-sm text-muted-foreground">
+              <span className="ml-1 text-xs sm:text-sm text-muted-foreground truncate">
                 workouts/week
               </span>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Volume Lifted
+        <Card className="overflow-hidden">
+          <CardHeader className="p-3 sm:pb-2 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+              Volume Lifted
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             <div className="flex items-center">
-              <Dumbbell className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">
+              <Dumbbell className="h-4 w-4 sm:h-5 sm:w-5 text-primary mr-2" />
+              <span className="text-xl sm:text-2xl font-bold">
                 {Math.round(summaryMetrics.totalWeight).toLocaleString()}
               </span>
-              <span className="ml-1 text-sm text-muted-foreground">lbs</span>
+              <span className="ml-1 text-xs sm:text-sm text-muted-foreground">
+                lbs
+              </span>
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Exercises Per Workout
+        <Card className="overflow-hidden">
+          <CardHeader className="p-3 sm:pb-2 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+              Exercises/Workout
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             <div className="flex items-center">
-              <TrendingUp className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary mr-2" />
+              <span className="text-xl sm:text-2xl font-bold">
                 {summaryMetrics.avgExercisesPerWorkout}
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
-
       {/* Tabs with various charts */}
       <Tabs defaultValue="progress" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
-          <TabsTrigger value="progress">Progress</TabsTrigger>
-          <TabsTrigger value="volume">Volume</TabsTrigger>
-          <TabsTrigger value="distribution">Distribution</TabsTrigger>
-          <TabsTrigger value="records">Personal Records</TabsTrigger>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4 h-auto">
+          <TabsTrigger value="progress" className="py-2 text-xs sm:text-sm">
+            Progress
+          </TabsTrigger>
+          <TabsTrigger value="volume" className="py-2 text-xs sm:text-sm">
+            Volume
+          </TabsTrigger>
+          <TabsTrigger value="distribution" className="py-2 text-xs sm:text-sm">
+            Distribution
+          </TabsTrigger>
+          <TabsTrigger value="records" className="py-2 text-xs sm:text-sm">
+            Records
+          </TabsTrigger>
         </TabsList>
 
         {/* Progress Tab */}
-        <TabsContent value="progress" className="space-y-6">
+        <TabsContent value="progress" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Exercise Progress</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">
+                Exercise Progress
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Track your progress on specific exercises over time
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
               <Select
                 value={selectedExercise}
                 onValueChange={setSelectedExercise}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="Select an exercise" />
                 </SelectTrigger>
                 <SelectContent>
@@ -607,15 +628,15 @@ const StatsPage = () => {
               </Select>
 
               {selectedExerciseStats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
-                  <Card>
-                    <CardContent className="pt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 my-3 sm:my-4">
+                  <Card className="shadow-sm">
+                    <CardContent className="p-3 sm:p-6 sm:pt-6">
                       <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           Current Max
                         </span>
                         <div className="flex items-center mt-1">
-                          <span className="text-2xl font-bold">
+                          <span className="text-lg sm:text-2xl font-bold">
                             {selectedExerciseStats.currentWeight} lbs
                           </span>
                           <span className="ml-1 text-xs text-muted-foreground">
@@ -626,14 +647,14 @@ const StatsPage = () => {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardContent className="pt-6">
+                  <Card className="shadow-sm">
+                    <CardContent className="p-3 sm:p-6 sm:pt-6">
                       <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           Estimated 1RM
                         </span>
                         <div className="flex items-center mt-1">
-                          <span className="text-2xl font-bold">
+                          <span className="text-lg sm:text-2xl font-bold">
                             {selectedExerciseStats.current1RM} lbs
                           </span>
                         </div>
@@ -641,14 +662,14 @@ const StatsPage = () => {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardContent className="pt-6">
+                  <Card className="shadow-sm">
+                    <CardContent className="p-3 sm:p-6 sm:pt-6">
                       <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           Progress
                         </span>
                         <div className="flex items-center mt-1">
-                          <span className="text-2xl font-bold">
+                          <span className="text-lg sm:text-2xl font-bold">
                             {selectedExerciseStats.progress.progressPercent > 0
                               ? "+"
                               : ""}
@@ -669,11 +690,11 @@ const StatsPage = () => {
               )}
 
               {selectedExercise && exerciseProgressData.length > 0 ? (
-                <div className="h-80">
+                <div className="h-64 sm:h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={exerciseProgressData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      margin={{ top: 5, right: 15, left: 5, bottom: 5 }} // reduced margins on mobile
                     >
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <XAxis
@@ -712,7 +733,8 @@ const StatsPage = () => {
                           format(date as Date, "MMMM d, yyyy")
                         }
                       />
-                      <Legend />
+                      <Legend wrapperStyle={{ fontSize: "10px" }} />{" "}
+                      {/* smaller legend text */}
                       <Line
                         yAxisId="left"
                         type="monotone"
@@ -744,14 +766,14 @@ const StatsPage = () => {
                   </ResponsiveContainer>
                 </div>
               ) : selectedExercise ? (
-                <div className="flex justify-center items-center h-60">
-                  <p className="text-muted-foreground">
+                <div className="flex justify-center items-center h-40 sm:h-60 text-center px-4">
+                  <p className="text-sm text-muted-foreground">
                     No strength data available for this exercise
                   </p>
                 </div>
               ) : (
-                <div className="flex justify-center items-center h-60">
-                  <p className="text-muted-foreground">
+                <div className="flex justify-center items-center h-40 sm:h-60 text-center px-4">
+                  <p className="text-sm text-muted-foreground">
                     Select an exercise to view progress
                   </p>
                 </div>
@@ -761,20 +783,22 @@ const StatsPage = () => {
         </TabsContent>
 
         {/* Volume Tab */}
-        <TabsContent value="volume" className="space-y-6">
+        <TabsContent value="volume" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Weekly Training Volume</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">
+                Weekly Training Volume
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Track your total training volume and workout frequency by week
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="h-64 sm:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={weeklyVolumeData}
-                    margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
+                    margin={{ top: 10, right: 10, left: 0, bottom: 20 }} // reduced margins
                   >
                     <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                     <XAxis
@@ -812,7 +836,11 @@ const StatsPage = () => {
                           : [value, "Workouts "]
                       }
                     />
-                    <Legend verticalAlign="top" height={36} />
+                    <Legend
+                      verticalAlign="top"
+                      height={36}
+                      wrapperStyle={{ fontSize: "10px" }}
+                    />
                     <Bar
                       yAxisId="left"
                       name="Volume (lbs)"
@@ -835,16 +863,18 @@ const StatsPage = () => {
         </TabsContent>
 
         {/* Distribution Tab */}
-        <TabsContent value="distribution" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="distribution" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Exercise Type Distribution</CardTitle>
-                <CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">
+                  Exercise Type Distribution
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Breakdown of strength vs cardio exercises
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -874,13 +904,15 @@ const StatsPage = () => {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Most Frequent Workouts</CardTitle>
-                <CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">
+                  Most Frequent Workouts
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   Your top 5 most performed workouts
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -919,58 +951,60 @@ const StatsPage = () => {
         </TabsContent>
 
         {/* Personal Records Tab */}
-        <TabsContent value="records" className="space-y-6">
+        <TabsContent value="records" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Personal Records</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">
+                Personal Records
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Your best performances on strength exercises
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-80 pr-4">
-                <div className="space-y-4">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <ScrollArea className="h-64 sm:h-80 pr-4">
+                <div className="space-y-3 sm:space-y-4">
                   {personalRecords.length > 0 ? (
                     personalRecords.map((record, index) => (
                       <Card
                         key={index}
-                        className="p-4 hover:bg-muted/20 transition-colors"
+                        className="p-3 sm:p-4 hover:bg-muted/20 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-start gap-3">
-                            <div className="flex flex-col justify-center items-center bg-primary/10 p-2 rounded-md">
-                              <Trophy className="h-5 w-5 text-amber-500" />
-                              <span className="text-xs font-semibold mt-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            <div className="flex flex-col justify-center items-center bg-primary/10 p-1.5 sm:p-2 rounded-md">
+                              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+                              <span className="text-[10px] sm:text-xs font-semibold mt-1">
                                 {index < 3
                                   ? ["1st", "2nd", "3rd"][index]
                                   : `${index + 1}th`}
                               </span>
                             </div>
                             <div>
-                              <div className="font-semibold text-base">
+                              <div className="font-semibold text-sm sm:text-base">
                                 {record.name}
                               </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="flex items-center text-sm">
-                                  <Dumbbell className="h-3.5 w-3.5 mr-1 text-primary" />
+                              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                                <div className="flex items-center text-xs sm:text-sm">
+                                  <Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 text-primary" />
                                   <span>
                                     {Math.round(record.weight)} lbs ×{" "}
                                     {record.reps} reps
                                   </span>
                                 </div>
-                                <div className="text-xs px-2 py-0.5 bg-primary/10 rounded-full">
+                                <div className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-primary/10 rounded-full">
                                   Est. 1RM:{" "}
                                   {Math.round(record.estimatedOneRepMax)} lbs
                                 </div>
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end">
+                          <div className="flex mt-1 sm:mt-0">
                             <Badge
                               variant="outline"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 text-[10px] sm:text-xs h-6"
                             >
-                              <Clock className="h-3 w-3" />
+                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                               {format(record.date, "MMM d, yyyy")}
                             </Badge>
                           </div>
@@ -979,7 +1013,7 @@ const StatsPage = () => {
                     ))
                   ) : (
                     <div className="flex justify-center items-center h-40">
-                      <p className="text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         No personal records found
                       </p>
                     </div>
@@ -990,17 +1024,18 @@ const StatsPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
       {/* Recently Achieved Progress Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Recent Achievements</CardTitle>
-          <CardDescription>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">
+            Recent Achievements
+          </CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Celebrate your recent progress milestones
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {personalRecords
               .slice(0, 3)
               .filter((record) => {
