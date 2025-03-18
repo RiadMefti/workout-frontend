@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   User,
+  ChartAreaIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/auth/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -48,14 +49,14 @@ const navItems = [
     href: "/workouts",
   },
   {
+    title: "Stats",
+    icon: <ChartAreaIcon className="h-5 w-5" />,
+    href: "/stats",
+  },
+  {
     title: "Profile",
     icon: <User className="h-5 w-5" />,
     href: "/profile",
-  },
-  {
-    title: "Stats",
-    icon: <List className="h-5 w-5" />,
-    href: "/stats",
   },
 ];
 
