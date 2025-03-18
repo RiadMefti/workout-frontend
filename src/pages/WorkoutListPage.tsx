@@ -225,6 +225,7 @@ const WorkoutSplitPage: FC = () => {
     try {
       const response = await splitClient.setActiveSplit(splitId);
       if (response.success) {
+        await splitClient.incrementUserNextWorkoutIndex(0);
         setActiveSplitId(splitId);
         toast({
           title: "Success",
