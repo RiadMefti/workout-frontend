@@ -265,6 +265,8 @@ const RecordWorkoutPage: FC = () => {
   const handleSubmit = async () => {
     if (!activeSplit || !currentRecord || !currentWorkout) return;
 
+    setLoading(true);
+
     try {
       // Save the workout record
       const recordResponse = await workoutManagerClient.postUserActiveWorkout(
@@ -300,6 +302,8 @@ const RecordWorkoutPage: FC = () => {
           error instanceof Error ? error.message : "Failed to record workout",
       });
     }
+
+    setLoading(false);
   };
 
   if (loading) {
