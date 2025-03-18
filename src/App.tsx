@@ -12,6 +12,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import { PublicRoute } from "./routes/PublicRoute";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { Toaster } from "./components/ui/toaster";
+import StatsPage from "./pages/StatsPage";
 
 //The App component is the root component of the application.
 //It contains the routing configuration for the application.
@@ -93,6 +94,17 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <NextWorkoutPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/stats"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <StatsPage />
                 </AppLayout>
               </ProtectedRoute>
             }

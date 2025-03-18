@@ -328,7 +328,7 @@ const WorkoutCalendar = () => {
                     </div>
                     {exercise.type === "strength" ? (
                       <div className="text-xs md:text-sm text-muted-foreground">
-                        {exercise.bestWeight}kg × {exercise.bestReps} reps
+                        {exercise.bestWeight}lbs × {exercise.bestReps} reps
                       </div>
                     ) : (
                       <div className="text-xs md:text-sm text-muted-foreground">

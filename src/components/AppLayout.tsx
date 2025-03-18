@@ -52,6 +52,11 @@ const navItems = [
     icon: <User className="h-5 w-5" />,
     href: "/profile",
   },
+  {
+    title: "Stats",
+    icon: <List className="h-5 w-5" />,
+    href: "/stats",
+  },
 ];
 
 //The AppLayout component is the layout for the entire application.
