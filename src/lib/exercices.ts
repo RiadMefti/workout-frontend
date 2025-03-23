@@ -452,6 +452,13 @@ export const exerciseDatabase: Exercise[] = [
     equipment: Equipment.Machine,
   },
   {
+    id: "hip-thrust",
+    name: "Hip Thrust",
+    category: ExerciseCategory.Strength,
+    muscleGroup: MuscleGroup.Legs,
+    equipment: Equipment.Machine,
+  },
+  {
     id: "lunge",
     name: "Lunge",
     category: ExerciseCategory.Strength,

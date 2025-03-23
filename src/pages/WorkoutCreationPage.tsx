@@ -487,10 +487,11 @@ const SplitCreationPage: FC = () => {
                 </Card>
               )}
 
-              {workouts.map((workout, workoutIndex) => {
-                return (
-                  <Card
+              <Accordion type="multiple" className="space-y-4">
+                {workouts.map((workout, workoutIndex) => (
+                  <AccordionItem
                     key={workoutIndex}
+                    value={workoutIndex.toString()}
                     className={`relative border-l-4 ${
                       DAY_COLORS[workoutIndex % DAY_COLORS.length] === "blue"
                         ? "border-l-blue-500"
@@ -511,507 +512,531 @@ const SplitCreationPage: FC = () => {
                         : "border-l-amber-500"
                     } shadow-md`}
                   >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                      onClick={() => handleRemoveWorkout(workoutIndex)}
-                      disabled={loading}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-base font-medium">
-                            Day Name
-                          </Label>
-                          <Input
-                            placeholder="E.g., Push Day, Leg Day, Upper Body, etc."
-                            value={workout.name}
-                            onChange={(e) =>
-                              setWorkouts((prevState) => {
-                                const updatedWorkouts = [...prevState];
-                                updatedWorkouts[workoutIndex].name =
-                                  e.target.value;
-                                return updatedWorkouts;
-                              })
-                            }
-                            disabled={loading}
-                            className={`focus-visible:ring-${
-                              DAY_COLORS[workoutIndex % DAY_COLORS.length]
-                            }-500`}
-                          />
+                    <div className="flex items-center justify-between">
+                      <AccordionTrigger className="flex-1 px-4 py-3">
+                        <div className="flex-1 text-left font-medium">
+                          {workout.name || "Workout Day"}
                         </div>
+                      </AccordionTrigger>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="mr-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveWorkout(workoutIndex);
+                        }}
+                        disabled={loading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
 
-                        <div className="flex items-center justify-between pt-2">
-                          <Label className="text-base font-medium">
-                            Exercises
-                          </Label>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddExercise(workoutIndex)}
-                            disabled={loading}
-                            className={
-                              DAY_COLORS[workoutIndex % DAY_COLORS.length] ===
-                              "blue"
-                                ? "border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/30"
-                                : DAY_COLORS[
-                                    workoutIndex % DAY_COLORS.length
-                                  ] === "purple"
-                                ? "border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:hover:bg-purple-950/30"
-                                : DAY_COLORS[
-                                    workoutIndex % DAY_COLORS.length
-                                  ] === "green"
-                                ? "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/30"
-                                : DAY_COLORS[
-                                    workoutIndex % DAY_COLORS.length
-                                  ] === "orange"
-                                ? "border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-950/30"
-                                : DAY_COLORS[
-                                    workoutIndex % DAY_COLORS.length
-                                  ] === "red"
-                                ? "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
-                                : DAY_COLORS[
-                                    workoutIndex % DAY_COLORS.length
-                                  ] === "cyan"
-                                ? "border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-800 dark:text-cyan-400 dark:hover:bg-cyan-950/30"
-                                : "border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30"
-                            }
-                          >
-                            <Plus className="mr-2 h-4 w-4" />
-                            <span className="hidden sm:inline">
-                              Add Exercise
-                            </span>
-                            <span className="sm:hidden">Add</span>
-                          </Button>
-                        </div>
-
-                        {workout.exercises.length === 0 && (
-                          <div className="rounded-md bg-gray-50 dark:bg-gray-900 p-4 text-center text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700">
-                            No exercises added yet. Add your first exercise to
-                            this workout.
+                    <AccordionContent>
+                      <div className="px-4 pb-4">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label className="text-base font-medium">
+                              Day Name
+                            </Label>
+                            <Input
+                              placeholder="E.g., Push Day, Leg Day, Upper Body, etc."
+                              value={workout.name}
+                              onChange={(e) =>
+                                setWorkouts((prevState) => {
+                                  const updatedWorkouts = [...prevState];
+                                  updatedWorkouts[workoutIndex].name =
+                                    e.target.value;
+                                  return updatedWorkouts;
+                                })
+                              }
+                              disabled={loading}
+                              className={`focus-visible:ring-${
+                                DAY_COLORS[workoutIndex % DAY_COLORS.length]
+                              }-500`}
+                            />
                           </div>
-                        )}
 
-                        {workout.exercises.map((exercise, exerciseIndex) => (
-                          <Card
-                            key={exerciseIndex}
-                            className="mt-4 overflow-hidden border-gray-200 dark:border-gray-800 shadow-sm"
-                          >
-                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  variant={
-                                    exercise.type === "strength"
-                                      ? "default"
-                                      : "secondary"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {exercise.type === "strength"
-                                    ? "Strength"
-                                    : "Cardio"}
-                                </Badge>
-                                <span className="text-sm font-medium">
-                                  {exercise.name
-                                    ? exercise.name
-                                    : "New Exercise"}
-                                </span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                                onClick={() =>
-                                  handleRemoveExercise(
-                                    workoutIndex,
-                                    exerciseIndex
-                                  )
-                                }
-                                disabled={loading}
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </Button>
+                          <div className="flex items-center justify-between pt-2">
+                            <Label className="text-base font-medium">
+                              Exercises
+                            </Label>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddExercise(workoutIndex)}
+                              disabled={loading}
+                              className={
+                                DAY_COLORS[workoutIndex % DAY_COLORS.length] ===
+                                "blue"
+                                  ? "border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                                  : DAY_COLORS[
+                                      workoutIndex % DAY_COLORS.length
+                                    ] === "purple"
+                                  ? "border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-400 dark:hover:bg-purple-950/30"
+                                  : DAY_COLORS[
+                                      workoutIndex % DAY_COLORS.length
+                                    ] === "green"
+                                  ? "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/30"
+                                  : DAY_COLORS[
+                                      workoutIndex % DAY_COLORS.length
+                                    ] === "orange"
+                                  ? "border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400 dark:hover:bg-orange-950/30"
+                                  : DAY_COLORS[
+                                      workoutIndex % DAY_COLORS.length
+                                    ] === "red"
+                                  ? "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+                                  : DAY_COLORS[
+                                      workoutIndex % DAY_COLORS.length
+                                    ] === "cyan"
+                                  ? "border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-800 dark:text-cyan-400 dark:hover:bg-cyan-950/30"
+                                  : "border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                              }
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              <span className="hidden sm:inline">
+                                Add Exercise
+                              </span>
+                              <span className="sm:hidden">Add</span>
+                            </Button>
+                          </div>
+
+                          {workout.exercises.length === 0 && (
+                            <div className="rounded-md bg-gray-50 dark:bg-gray-900 p-4 text-center text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700">
+                              No exercises added yet. Add your first exercise to
+                              this workout.
                             </div>
-                            <CardContent className="pt-4 pb-4">
-                              <div className="space-y-4">
-                                <div className="space-y-2">
-                                  <Label className="text-sm">Exercise</Label>
-                                  <div className="relative">
-                                    <Drawer
-                                      open={
-                                        isDrawerOpen &&
-                                        selectedWorkoutIndex === workoutIndex &&
-                                        selectedExerciseIndex === exerciseIndex
-                                      }
-                                      onOpenChange={setIsDrawerOpen}
-                                    >
-                                      <DrawerTrigger asChild>
-                                        <Button
-                                          variant="outline"
-                                          className="w-full justify-between font-normal"
-                                          onClick={() => {
-                                            setSelectedWorkoutIndex(
-                                              workoutIndex
-                                            );
-                                            setSelectedExerciseIndex(
-                                              exerciseIndex
-                                            );
-                                          }}
-                                        >
-                                          {exercise.name ||
-                                            "Select an exercise"}
-                                          <ChevronDown className="h-4 w-4 opacity-50" />
-                                        </Button>
-                                      </DrawerTrigger>
-                                      <DrawerContent className="h-[85vh] sm:h-[80vh]">
-                                        <DrawerHeader className="border-b">
-                                          <DrawerTitle>
-                                            Select Exercise
-                                          </DrawerTitle>
-                                          <DrawerDescription>
-                                            Browse or search for exercises
-                                          </DrawerDescription>
-                                        </DrawerHeader>
+                          )}
 
-                                        <div className="px-4 py-3 border-b sticky top-0 bg-white dark:bg-gray-950 z-10">
-                                          <div className="relative">
-                                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                                            <Input
-                                              placeholder="Search exercises..."
-                                              className="pl-10"
-                                              value={exerciseSearchQuery}
-                                              onChange={(e) =>
-                                                setExerciseSearchQuery(
-                                                  e.target.value
-                                                )
-                                              }
-                                            />
-                                          </div>
-
-                                          <div className="flex flex-wrap gap-2 mt-4">
-                                            <div className="space-y-1 pr-4">
-                                              <Label className="text-xs">
-                                                Category
-                                              </Label>
-                                              <Select
-                                                value={selectedCategory}
-                                                onValueChange={(
-                                                  value:
-                                                    | "all"
-                                                    | ExerciseCategory
-                                                ) => setSelectedCategory(value)}
-                                              >
-                                                <SelectTrigger className="w-[130px]">
-                                                  <SelectValue placeholder="Category" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="all">
-                                                    All Categories
-                                                  </SelectItem>
-                                                  <SelectItem
-                                                    value={
-                                                      ExerciseCategory.Strength
-                                                    }
-                                                  >
-                                                    Strength
-                                                  </SelectItem>
-                                                  <SelectItem
-                                                    value={
-                                                      ExerciseCategory.Cardio
-                                                    }
-                                                  >
-                                                    Cardio
-                                                  </SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-
-                                            <div className="space-y-1">
-                                              <Label className="text-xs">
-                                                Muscle Group
-                                              </Label>
-                                              <Select
-                                                value={selectedMuscleGroup}
-                                                onValueChange={(
-                                                  value: "all" | MuscleGroup
-                                                ) =>
-                                                  setSelectedMuscleGroup(value)
-                                                }
-                                              >
-                                                <SelectTrigger className="w-[150px]">
-                                                  <SelectValue placeholder="Muscle Group" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="all">
-                                                    All Muscle Groups
-                                                  </SelectItem>
-                                                  {Object.values(
-                                                    MuscleGroup
-                                                  ).map((group) => (
-                                                    <SelectItem
-                                                      key={group}
-                                                      value={group}
-                                                    >
-                                                      {group}
-                                                    </SelectItem>
-                                                  ))}
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        <div className="overflow-auto px-4 py-2 pb-safe-area-bottom">
-                                          {filteredExercises.length === 0 ? (
-                                            <div className="text-center py-8">
-                                              <p className="text-gray-500">
-                                                No exercises found. Try
-                                                adjusting your search.
-                                              </p>
-                                            </div>
-                                          ) : (
-                                            <div className="space-y-2">
-                                              <Accordion
-                                                type="single"
-                                                collapsible
-                                                className="w-full"
-                                                defaultValue={
-                                                  selectedMuscleGroup !== "all"
-                                                    ? selectedMuscleGroup
-                                                    : undefined
-                                                }
-                                              >
-                                                {Object.entries(
-                                                  exercisesByMuscleGroup
-                                                )
-                                                  .filter(
-                                                    ([exercises]) =>
-                                                      exercises.length > 0
-                                                  )
-                                                  .map(
-                                                    ([
-                                                      muscleGroup,
-                                                      exercises,
-                                                    ]) => (
-                                                      <AccordionItem
-                                                        key={muscleGroup}
-                                                        value={muscleGroup}
-                                                      >
-                                                        <AccordionTrigger className="hover:bg-gray-50 dark:hover:bg-gray-900 px-3 py-2 rounded-md">
-                                                          <div className="flex items-center space-x-2">
-                                                            <span>
-                                                              {muscleGroup}
-                                                            </span>
-                                                            <Badge
-                                                              variant="outline"
-                                                              className="ml-2"
-                                                            >
-                                                              {exercises.length}
-                                                            </Badge>
-                                                          </div>
-                                                        </AccordionTrigger>
-                                                        <AccordionContent>
-                                                          <div className="grid grid-cols-1 gap-2 pl-2">
-                                                            {exercises.map(
-                                                              (ex) => (
-                                                                <Button
-                                                                  key={ex.id}
-                                                                  variant="ghost"
-                                                                  className="justify-start px-3 h-auto py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-800"
-                                                                  onClick={() =>
-                                                                    selectExerciseFromDb(
-                                                                      ex
-                                                                    )
-                                                                  }
-                                                                >
-                                                                  <div className="mr-3">
-                                                                    {getEquipmentIcon(
-                                                                      ex.equipment
-                                                                    )}
-                                                                  </div>
-                                                                  <div className="flex-1">
-                                                                    <p className="font-medium text-sm">
-                                                                      {ex.name}
-                                                                    </p>
-                                                                    <div className="flex items-center mt-1">
-                                                                      <Badge
-                                                                        variant="outline"
-                                                                        className="mr-2 text-xs"
-                                                                      >
-                                                                        {
-                                                                          ex.equipment
-                                                                        }
-                                                                      </Badge>
-                                                                      <Badge
-                                                                        variant={
-                                                                          ex.category ===
-                                                                          ExerciseCategory.Strength
-                                                                            ? "default"
-                                                                            : "secondary"
-                                                                        }
-                                                                        className="text-xs"
-                                                                      >
-                                                                        {
-                                                                          ex.category
-                                                                        }
-                                                                      </Badge>
-                                                                    </div>
-                                                                  </div>
-                                                                </Button>
-                                                              )
-                                                            )}
-                                                          </div>
-                                                        </AccordionContent>
-                                                      </AccordionItem>
-                                                    )
-                                                  )}
-                                              </Accordion>
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        <DrawerFooter className="border-t">
-                                          <DrawerClose asChild>
-                                            <Button variant="outline">
-                                              Cancel
-                                            </Button>
-                                          </DrawerClose>
-                                        </DrawerFooter>
-                                      </DrawerContent>
-                                    </Drawer>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <Label className="text-sm">Type</Label>
-                                  <Select
-                                    value={exercise.type}
-                                    onValueChange={(value) =>
-                                      updateExercise(
-                                        workoutIndex,
-                                        exerciseIndex,
-                                        "type",
-                                        value
-                                      )
+                          {workout.exercises.map((exercise, exerciseIndex) => (
+                            <Card
+                              key={exerciseIndex}
+                              className="mt-4 overflow-hidden border-gray-200 dark:border-gray-800 shadow-sm"
+                            >
+                              <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+                                <div className="flex items-center space-x-2">
+                                  <Badge
+                                    variant={
+                                      exercise.type === "strength"
+                                        ? "default"
+                                        : "secondary"
                                     }
-                                    disabled={loading}
+                                    className="text-xs"
                                   >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="strength">
-                                        Strength
-                                      </SelectItem>
-                                      <SelectItem value="cardio">
-                                        Cardio
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                    {exercise.type === "strength"
+                                      ? "Strength"
+                                      : "Cardio"}
+                                  </Badge>
+                                  <span className="text-sm font-medium">
+                                    {exercise.name
+                                      ? exercise.name
+                                      : "New Exercise"}
+                                  </span>
                                 </div>
-
-                                {exercise.type === "strength" && (
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <Label className="text-sm">Sets</Label>
-                                      <Input
-                                        type="number"
-                                        value={exercise.sets}
-                                        onChange={(e) =>
-                                          handleNumberInput(
-                                            e,
-                                            workoutIndex,
-                                            exerciseIndex,
-                                            "sets"
-                                          )
-                                        }
-                                        disabled={loading}
-                                        min={1}
-                                        placeholder="e.g., 3"
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm">Reps</Label>
-                                      <Input
-                                        type="number"
-                                        value={exercise.reps}
-                                        onChange={(e) =>
-                                          handleNumberInput(
-                                            e,
-                                            workoutIndex,
-                                            exerciseIndex,
-                                            "reps"
-                                          )
-                                        }
-                                        disabled={loading}
-                                        min={1}
-                                        placeholder="e.g., 10"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-
-                                {exercise.type === "cardio" && (
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <Label className="text-sm">
-                                        Duration (mins)
-                                      </Label>
-                                      <Input
-                                        type="number"
-                                        value={exercise.duration}
-                                        onChange={(e) =>
-                                          handleNumberInput(
-                                            e,
-                                            workoutIndex,
-                                            exerciseIndex,
-                                            "duration",
-                                            true
-                                          )
-                                        }
-                                        disabled={loading}
-                                        min={1}
-                                        step="0.1"
-                                        placeholder="e.g., 30"
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label className="text-sm">
-                                        Distance (km)
-                                      </Label>
-                                      <Input
-                                        type="number"
-                                        value={exercise.distance}
-                                        onChange={(e) =>
-                                          handleNumberInput(
-                                            e,
-                                            workoutIndex,
-                                            exerciseIndex,
-                                            "distance",
-                                            true
-                                          )
-                                        }
-                                        disabled={loading}
-                                        min={0.1}
-                                        step="0.1"
-                                        placeholder="e.g., 5"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                  onClick={() =>
+                                    handleRemoveExercise(
+                                      workoutIndex,
+                                      exerciseIndex
+                                    )
+                                  }
+                                  disabled={loading}
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                              <CardContent className="pt-4 pb-4">
+                                <div className="space-y-4">
+                                  <div className="space-y-2">
+                                    <Label className="text-sm">Exercise</Label>
+                                    <div className="relative">
+                                      <Drawer
+                                        open={
+                                          isDrawerOpen &&
+                                          selectedWorkoutIndex ===
+                                            workoutIndex &&
+                                          selectedExerciseIndex ===
+                                            exerciseIndex
+                                        }
+                                        onOpenChange={setIsDrawerOpen}
+                                      >
+                                        <DrawerTrigger asChild>
+                                          <Button
+                                            variant="outline"
+                                            className="w-full justify-between font-normal"
+                                            onClick={() => {
+                                              setSelectedWorkoutIndex(
+                                                workoutIndex
+                                              );
+                                              setSelectedExerciseIndex(
+                                                exerciseIndex
+                                              );
+                                            }}
+                                          >
+                                            {exercise.name ||
+                                              "Select an exercise"}
+                                            <ChevronDown className="h-4 w-4 opacity-50" />
+                                          </Button>
+                                        </DrawerTrigger>
+                                        <DrawerContent className="h-[85vh] sm:h-[80vh]">
+                                          <DrawerHeader className="border-b">
+                                            <DrawerTitle>
+                                              Select Exercise
+                                            </DrawerTitle>
+                                            <DrawerDescription>
+                                              Browse or search for exercises
+                                            </DrawerDescription>
+                                          </DrawerHeader>
+
+                                          <div className="px-4 py-3 border-b sticky top-0 bg-white dark:bg-gray-950 z-10">
+                                            <div className="relative">
+                                              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                                              <Input
+                                                placeholder="Search exercises..."
+                                                className="pl-10"
+                                                value={exerciseSearchQuery}
+                                                onChange={(e) =>
+                                                  setExerciseSearchQuery(
+                                                    e.target.value
+                                                  )
+                                                }
+                                              />
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2 mt-4">
+                                              <div className="space-y-1 pr-4">
+                                                <Label className="text-xs">
+                                                  Category
+                                                </Label>
+                                                <Select
+                                                  value={selectedCategory}
+                                                  onValueChange={(
+                                                    value:
+                                                      | "all"
+                                                      | ExerciseCategory
+                                                  ) =>
+                                                    setSelectedCategory(value)
+                                                  }
+                                                >
+                                                  <SelectTrigger className="w-[130px]">
+                                                    <SelectValue placeholder="Category" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="all">
+                                                      All Categories
+                                                    </SelectItem>
+                                                    <SelectItem
+                                                      value={
+                                                        ExerciseCategory.Strength
+                                                      }
+                                                    >
+                                                      Strength
+                                                    </SelectItem>
+                                                    <SelectItem
+                                                      value={
+                                                        ExerciseCategory.Cardio
+                                                      }
+                                                    >
+                                                      Cardio
+                                                    </SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+
+                                              <div className="space-y-1">
+                                                <Label className="text-xs">
+                                                  Muscle Group
+                                                </Label>
+                                                <Select
+                                                  value={selectedMuscleGroup}
+                                                  onValueChange={(
+                                                    value: "all" | MuscleGroup
+                                                  ) =>
+                                                    setSelectedMuscleGroup(
+                                                      value
+                                                    )
+                                                  }
+                                                >
+                                                  <SelectTrigger className="w-[150px]">
+                                                    <SelectValue placeholder="Muscle Group" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="all">
+                                                      All Muscle Groups
+                                                    </SelectItem>
+                                                    {Object.values(
+                                                      MuscleGroup
+                                                    ).map((group) => (
+                                                      <SelectItem
+                                                        key={group}
+                                                        value={group}
+                                                      >
+                                                        {group}
+                                                      </SelectItem>
+                                                    ))}
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <div className="overflow-auto px-4 py-2 pb-safe-area-bottom">
+                                            {filteredExercises.length === 0 ? (
+                                              <div className="text-center py-8">
+                                                <p className="text-gray-500">
+                                                  No exercises found. Try
+                                                  adjusting your search.
+                                                </p>
+                                              </div>
+                                            ) : (
+                                              <div className="space-y-2">
+                                                <Accordion
+                                                  type="single"
+                                                  collapsible
+                                                  className="w-full"
+                                                  defaultValue={
+                                                    selectedMuscleGroup !==
+                                                    "all"
+                                                      ? selectedMuscleGroup
+                                                      : undefined
+                                                  }
+                                                >
+                                                  {Object.entries(
+                                                    exercisesByMuscleGroup
+                                                  )
+                                                    .filter(
+                                                      ([exercises]) =>
+                                                        exercises.length > 0
+                                                    )
+                                                    .map(
+                                                      ([
+                                                        muscleGroup,
+                                                        exercises,
+                                                      ]) => (
+                                                        <AccordionItem
+                                                          key={muscleGroup}
+                                                          value={muscleGroup}
+                                                        >
+                                                          <AccordionTrigger className="hover:bg-gray-50 dark:hover:bg-gray-900 px-3 py-2 rounded-md">
+                                                            <div className="flex items-center space-x-2">
+                                                              <span>
+                                                                {muscleGroup}
+                                                              </span>
+                                                              <Badge
+                                                                variant="outline"
+                                                                className="ml-2"
+                                                              >
+                                                                {
+                                                                  exercises.length
+                                                                }
+                                                              </Badge>
+                                                            </div>
+                                                          </AccordionTrigger>
+                                                          <AccordionContent>
+                                                            <div className="grid grid-cols-1 gap-2 pl-2">
+                                                              {exercises.map(
+                                                                (ex) => (
+                                                                  <Button
+                                                                    key={ex.id}
+                                                                    variant="ghost"
+                                                                    className="justify-start px-3 h-auto py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                                    onClick={() =>
+                                                                      selectExerciseFromDb(
+                                                                        ex
+                                                                      )
+                                                                    }
+                                                                  >
+                                                                    <div className="mr-3">
+                                                                      {getEquipmentIcon(
+                                                                        ex.equipment
+                                                                      )}
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                      <p className="font-medium text-sm">
+                                                                        {
+                                                                          ex.name
+                                                                        }
+                                                                      </p>
+                                                                      <div className="flex items-center mt-1">
+                                                                        <Badge
+                                                                          variant="outline"
+                                                                          className="mr-2 text-xs"
+                                                                        >
+                                                                          {
+                                                                            ex.equipment
+                                                                          }
+                                                                        </Badge>
+                                                                        <Badge
+                                                                          variant={
+                                                                            ex.category ===
+                                                                            ExerciseCategory.Strength
+                                                                              ? "default"
+                                                                              : "secondary"
+                                                                          }
+                                                                          className="text-xs"
+                                                                        >
+                                                                          {
+                                                                            ex.category
+                                                                          }
+                                                                        </Badge>
+                                                                      </div>
+                                                                    </div>
+                                                                  </Button>
+                                                                )
+                                                              )}
+                                                            </div>
+                                                          </AccordionContent>
+                                                        </AccordionItem>
+                                                      )
+                                                    )}
+                                                </Accordion>
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          <DrawerFooter className="border-t">
+                                            <DrawerClose asChild>
+                                              <Button variant="outline">
+                                                Cancel
+                                              </Button>
+                                            </DrawerClose>
+                                          </DrawerFooter>
+                                        </DrawerContent>
+                                      </Drawer>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label className="text-sm">Type</Label>
+                                    <Select
+                                      value={exercise.type}
+                                      onValueChange={(value) =>
+                                        updateExercise(
+                                          workoutIndex,
+                                          exerciseIndex,
+                                          "type",
+                                          value
+                                        )
+                                      }
+                                      disabled={loading}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="strength">
+                                          Strength
+                                        </SelectItem>
+                                        <SelectItem value="cardio">
+                                          Cardio
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  {exercise.type === "strength" && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-sm">Sets</Label>
+                                        <Input
+                                          type="number"
+                                          value={exercise.sets}
+                                          onChange={(e) =>
+                                            handleNumberInput(
+                                              e,
+                                              workoutIndex,
+                                              exerciseIndex,
+                                              "sets"
+                                            )
+                                          }
+                                          disabled={loading}
+                                          min={1}
+                                          placeholder="e.g., 3"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-sm">Reps</Label>
+                                        <Input
+                                          type="number"
+                                          value={exercise.reps}
+                                          onChange={(e) =>
+                                            handleNumberInput(
+                                              e,
+                                              workoutIndex,
+                                              exerciseIndex,
+                                              "reps"
+                                            )
+                                          }
+                                          disabled={loading}
+                                          min={1}
+                                          placeholder="e.g., 10"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {exercise.type === "cardio" && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label className="text-sm">
+                                          Duration (mins)
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          value={exercise.duration}
+                                          onChange={(e) =>
+                                            handleNumberInput(
+                                              e,
+                                              workoutIndex,
+                                              exerciseIndex,
+                                              "duration",
+                                              true
+                                            )
+                                          }
+                                          disabled={loading}
+                                          min={1}
+                                          step="0.1"
+                                          placeholder="e.g., 30"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-sm">
+                                          Distance (km)
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          value={exercise.distance}
+                                          onChange={(e) =>
+                                            handleNumberInput(
+                                              e,
+                                              workoutIndex,
+                                              exerciseIndex,
+                                              "distance",
+                                              true
+                                            )
+                                          }
+                                          disabled={loading}
+                                          min={0.1}
+                                          step="0.1"
+                                          placeholder="e.g., 5"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           </div>
         </CardContent>
