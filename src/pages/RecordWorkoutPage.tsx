@@ -96,7 +96,9 @@ const ExerciseRecord: FC<ExerciseRecordProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Best Reps (try {exercise.reps})</Label>
+                <Label>
+                  Best Reps (try {exercise.reps} x {exercise.sets} sets)
+                </Label>
                 <Input
                   type="number"
                   min="0"
