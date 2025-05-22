@@ -39,6 +39,11 @@ const navItems = [
     href: "/dashboard",
   },
   {
+    title: "Connections Calendar",
+    icon: <User className="h-5 w-5" />,
+    href: "/connections-calendar",
+  },
+  {
     title: "Create workout split",
     icon: <ListPlus className="h-5 w-5" />,
     href: "/create-workout",

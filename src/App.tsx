@@ -13,6 +13,7 @@ import { PublicRoute } from "./routes/PublicRoute";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { Toaster } from "./components/ui/toaster";
 import StatsPage from "./pages/StatsPage";
+import ConnectionsCalendarPage from "./pages/ConnectionsCalendarPage";
 
 //The App component is the root component of the application.
 //It contains the routing configuration for the application.
@@ -105,6 +106,16 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <StatsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/connections-calendar"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ConnectionsCalendarPage />
                 </AppLayout>
               </ProtectedRoute>
             }
